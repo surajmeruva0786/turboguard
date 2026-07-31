@@ -1,0 +1,62 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+
+# Data — real licensed datasets are large and must never be committed.
+# Small physics-based synthetic data used for demos/tests/CI IS committed
+# (data/raw/synthetic/), so no blanket ignore of data/raw here.
+data/raw/cwru/*
+!data/raw/cwru/.gitkeep
+data/raw/ims/*
+!data/raw/ims/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+
+# Model runs / checkpoints (large binaries — keep metrics/configs only)
+runs/*
+!runs/.gitkeep
+!runs/**/metrics.json
+!runs/**/config.yaml
+*.ckpt
+*.pt
+*.pth
+*.joblib
+*.pkl
+
+# Results (generated artifacts, keep directory placeholder + small tables)
+results/**/*.png
+results/**/*.pdf
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Env files
+.env
+.env.local
+
+# Streamlit
+.streamlit/secrets.toml
+
+# Coverage
+.coverage
+htmlcov/
