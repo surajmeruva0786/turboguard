@@ -15,7 +15,12 @@ default dashboard demo. Real downloader scripts (`scripts/download_cwru.py`,
 pipeline — swapping in real data requires no code changes, only pointing
 `--input_dir` at the real data.
 
-## Phase A — Project scaffolding (1–10)
+**Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
+done, what's next, and how to resume a session. Short version as of
+2026-08-01: Phases A–G complete (37 commits, 85 tests passing), Phase H
+in progress.
+
+## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
 2. `LICENSE` (MIT)
 3. `requirements.txt`
@@ -27,14 +32,14 @@ pipeline — swapping in real data requires no code changes, only pointing
 9. `src/` package scaffolding (`__init__.py` files)
 10. `configs/base.yaml`
 
-## Phase B — Core utilities (11–15)
+## Phase B — Core utilities (11–15) ✅ done
 11. `src/utils/seed.py`
 12. `src/utils/logging_config.py`
 13. `src/utils/reports.py`
 14. `src/utils/io.py`
 15. `tests/test_utils.py`
 
-## Phase C — Bearing physics & synthetic data (16–25)
+## Phase C — Bearing physics & synthetic data (16–25) ✅ done
 16. `src/features/bearing_freqs.py`
 17. `tests/test_bearing_freqs.py`
 18. `scripts/generate_synthetic.py` (CWRU-like synthetic generator)
@@ -46,7 +51,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 24. Generate + commit synthetic CWRU dataset
 25. Generate + commit synthetic IMS dataset
 
-## Phase D — Data loaders (26–32)
+## Phase D — Data loaders (26–32) ✅ done
 26. `src/data/cwru_loader.py`
 27. `src/data/ims_loader.py`
 28. `src/data/dataset.py` (PyTorch `Dataset`s)
@@ -55,7 +60,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 31. `tests/test_dataset.py`
 32. `configs/data.yaml`
 
-## Phase E — Signal preprocessing (33–40)
+## Phase E — Signal preprocessing (33–40) ✅ done
 33. `src/preprocessing/conditioning.py`
 34. `src/preprocessing/windowing.py`
 35. `src/preprocessing/run.py` (CLI)
@@ -65,7 +70,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 39. Run preprocessing on synthetic IMS
 40. Validate processed outputs
 
-## Phase F — Feature engineering (41–52)
+## Phase F — Feature engineering (41–52) ✅ done
 41. `src/features/time_domain.py`
 42. `src/features/frequency_domain.py`
 43. `src/features/envelope.py`
@@ -79,7 +84,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 51. `src/features/extract.py` + run extraction on processed data
 52. Feature extraction validation
 
-## Phase G — Classical ML models (53–60)
+## Phase G — Classical ML models (53–60) ✅ done
 53. `src/models/classical.py`
 54. `src/training/train_classical.py`
 55. `configs/classical_baselines.yaml`
@@ -89,7 +94,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 59. `tests/test_evaluation_classification.py`
 60. Evaluate classical baselines, save results
 
-## Phase H — Deep models (61–72)
+## Phase H — Deep models (61–72) 🚧 in progress (CNNEncoder + TurboGuardCNN done)
 61. `src/models/turboguard_cnn.py`
 62. `src/models/turboguard_hybrid.py`
 63. `src/models/autoencoder.py`
