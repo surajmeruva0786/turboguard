@@ -21,8 +21,10 @@ dist/
 # (data/raw/synthetic/), so no blanket ignore of data/raw here.
 data/raw/cwru/*
 !data/raw/cwru/.gitkeep
+!data/raw/cwru/synthetic/
 data/raw/ims/*
 !data/raw/ims/.gitkeep
+!data/raw/ims/synthetic/
 data/processed/*
 !data/processed/.gitkeep
 
