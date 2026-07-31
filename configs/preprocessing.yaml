@@ -1,0 +1,6 @@
+target_sample_rate_hz: 12000
+window_seconds: 1.0
+overlap: 0.5
+n_channels: 3
+highpass_cutoff_hz: 5.0
+antialias_cutoff_hz: 6000.0
