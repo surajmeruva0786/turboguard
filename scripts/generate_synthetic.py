@@ -277,7 +277,13 @@ def main() -> None:
     parser.add_argument("--cwru_sample_rate", type=float, default=12000.0)
     parser.add_argument("--ims_n_bearings", type=int, default=2)
     parser.add_argument("--ims_n_snapshots", type=int, default=20)
-    parser.add_argument("--ims_snapshot_duration_s", type=float, default=0.5)
+    parser.add_argument(
+        "--ims_snapshot_duration_s",
+        type=float,
+        default=1.0,
+        help="Kept equal to the model's window_seconds (1.0) so CWRU and IMS "
+        "windows share one shape and can feed the same multi-task encoder.",
+    )
     parser.add_argument("--ims_sample_rate", type=float, default=12000.0)
     args = parser.parse_args()
 
