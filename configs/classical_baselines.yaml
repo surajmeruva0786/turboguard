@@ -1,0 +1,16 @@
+seed: 42
+cv_folds: 4  # matches the 4 trials/class in the committed synthetic CWRU set
+
+models:
+  random_forest:
+    n_estimators: 500
+  xgboost:
+    n_estimators: 1000
+    learning_rate: 0.05
+    max_depth: 6
+  svm:
+    C: 1.0
+    gamma: scale
+  logistic_regression:
+    C: 1.0
+    max_iter: 1000

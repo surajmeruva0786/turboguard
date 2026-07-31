@@ -24,6 +24,16 @@ from src.utils.logging_config import get_logger
 
 logger = get_logger(__name__)
 
+# Non-feature columns carried over from src.preprocessing.run's metadata.csv,
+# so downstream training/XAI code can split X (features) from y/metadata
+# without guessing which columns are which.
+CWRU_METADATA_COLUMNS = [
+    "health_state", "load_hp", "rpm", "shaft_freq_hz", "fault_diameter_in", "source_file", "window_index",
+]
+IMS_METADATA_COLUMNS = [
+    "bearing_id", "snapshot_index", "rul_cycles", "health_indicator", "dominant_fault", "source_file", "window_index",
+]
+
 
 def extract_cwru(input_dir: Path, output_dir: Path, sample_rate: float) -> pd.DataFrame:
     X = np.load(input_dir / "windows.npz")["X"]
