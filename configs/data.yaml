@@ -1,0 +1,21 @@
+# Data source configuration. Switch `source` from "synthetic" to "real"
+# once the real datasets have been downloaded via scripts/download_*.py —
+# no other pipeline code needs to change.
+cwru:
+  source: synthetic
+  synthetic_dir: data/raw/cwru/synthetic
+  real_dir: data/raw/cwru
+  processed_dir: data/processed/cwru
+
+ims:
+  source: synthetic
+  synthetic_dir: data/raw/ims/synthetic
+  real_dir: data/raw/ims
+  processed_dir: data/processed/ims
+
+window:
+  window_seconds: 1.0
+  overlap: 0.5
+  target_sample_rate_hz: 12000
+  n_channels: 3
+  sequence_length: 10
