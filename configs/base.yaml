@@ -1,0 +1,20 @@
+# Shared defaults inherited/overridden by task-specific configs.
+seed: 42
+
+signal:
+  sample_rate_hz: 12000
+  window_seconds: 1.0
+  overlap: 0.5
+
+paths:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  runs_dir: runs
+  results_dir: results
+
+fault_classes:
+  - healthy
+  - inner_race
+  - outer_race
+  - ball
+  - compound
