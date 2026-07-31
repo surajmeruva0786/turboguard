@@ -31,6 +31,8 @@ import pandas as pd
 
 from src.features.bearing_freqs import (
     CWRU_DRIVE_END_BEARING,
+    IMS_BEARING,
+    IMS_SHAFT_FREQ_HZ,
     BearingGeometry,
     bpfi,
     bpfo,
@@ -52,10 +54,6 @@ FAULT_CLASSES = ["healthy", "inner_race", "outer_race", "ball", "compound"]
 # Structural resonance excited by each impact (typical for small motor test rigs).
 RESONANCE_FREQ_HZ = 3200.0
 RESONANCE_DECAY_S = 0.0015
-
-# IMS test rig ran at a constant ~2000 rpm (Qiu et al., 2006).
-IMS_RPM = 2000
-IMS_SHAFT_FREQ_HZ = IMS_RPM / 60.0
 
 
 def _shaft_harmonics(t: np.ndarray, shaft_freq_hz: float, rng: np.random.Generator) -> np.ndarray:
@@ -227,7 +225,7 @@ def gen_ims_like(
     rng = np.random.default_rng(seed + 1)
     out_dir = ensure_dir(output_dir / "ims" / "synthetic")
     rows = []
-    geom = BearingGeometry(n_elements=16, element_diameter=0.331, pitch_diameter=2.815)
+    geom = IMS_BEARING
 
     for bearing_id in range(1, n_bearings + 1):
         bearing_dir = ensure_dir(out_dir / f"bearing{bearing_id}")

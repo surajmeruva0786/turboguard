@@ -45,8 +45,10 @@ CWRU_DRIVE_END_BEARING = BearingGeometry(n_elements=9, element_diameter=0.3126, 
 CWRU_FAN_END_BEARING = BearingGeometry(n_elements=9, element_diameter=0.2656, pitch_diameter=1.122)
 
 # Rexnord ZA-2115 double-row bearing used in the NASA IMS test rig, in inches.
-# Source: Qiu et al. (2006).
+# Source: Qiu et al. (2006). The IMS rig ran at a constant ~2000 rpm.
 IMS_BEARING = BearingGeometry(n_elements=16, element_diameter=0.331, pitch_diameter=2.815)
+IMS_RPM = 2000
+IMS_SHAFT_FREQ_HZ = IMS_RPM / 60.0
 
 
 def bpfo(shaft_freq_hz: float, geom: BearingGeometry) -> float:
