@@ -28,11 +28,14 @@ data/raw/ims/*
 data/processed/*
 !data/processed/.gitkeep
 
-# Model runs / checkpoints (large binaries — keep metrics/configs only)
+# Model runs / checkpoints (large binaries — keep metrics/configs only).
+# Directories must be explicitly un-ignored too, or git won't look inside
+# them for the negated file patterns below.
 runs/*
 !runs/.gitkeep
-!runs/**/metrics.json
-!runs/**/config.yaml
+!runs/*/
+!runs/*/metrics.json
+!runs/*/config.yaml
 *.ckpt
 *.pt
 *.pth

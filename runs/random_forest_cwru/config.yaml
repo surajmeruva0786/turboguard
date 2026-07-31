@@ -1,0 +1,5 @@
+model: random_forest
+dataset: cwru
+cv_folds: 4
+seed: 42
+n_features: 176
