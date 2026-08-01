@@ -110,13 +110,31 @@ passing, 0 failing**, verified from a **fully clean artifact state**
   which made Docker Desktop intermittently unresponsive mid-session —
   worth the user's attention independent of this project.
 
-### Not started yet (Phase O)
+- **Phase O — Final polish (in progress)**: README section 18 (Results)
+  rewritten with real measured numbers instead of the literature-style
+  placeholder table; section 17 (Project Structure) and section 16
+  (Usage) updated to match the actual repo and actual CLI signatures
+  (several commands there had drifted from what the CLIs actually accept,
+  e.g. `cross_condition`'s real `--model`/`--dataset` flags vs the
+  originally-drafted `--checkpoint`); Citation/Contact placeholders filled
+  in. Full coverage run: **76% overall** (`pytest -q --cov=src
+  --cov-report=term-missing`, 141 passed). Two modules show 0% by the
+  coverage tool despite being exercised: `src/evaluation/evaluate_rul.py`
+  and `src/xai/explain.py` are both CLI entry points invoked via
+  `subprocess`/`python -m` (from `conftest.py`'s fixture,
+  `run_full_pipeline.py`, and manual runs) rather than imported and
+  called in-process by a test, so `coverage.py` doesn't attribute that
+  execution — not an actual test gap, just a measurement blind spot worth
+  knowing about.
+
+### Not started yet (Phase O tail)
 
 Full detail in `docs/ROADMAP.md`.
 
-1. **Phase O — Final polish**: update README's Results section with the
-   real measured (synthetic-scale) numbers instead of the placeholder
-   literature-style table, `CHANGELOG.md`, full lint pass, `v0.1.0` tag.
+1. `CHANGELOG.md`.
+2. Repo-wide lint/format pass (already clean as of step 109 — final
+   verification only).
+3. Final release checklist + `v0.1.0` tag.
 
 ## How to resume
 
