@@ -17,7 +17,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–L complete (132 tests passing), Phase M next.
+2026-08-01: Phases A–M complete (141 tests passing), Phase N next.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -140,7 +140,7 @@ done, what's next, and how to resume a session. Short version as of
 96. `notebooks/04_rul_trajectories.ipynb`
 97. Notebook README / index
 
-## Phase M — Streamlit dashboard (98–105)
+## Phase M — Streamlit dashboard (98–105) ✅ done
 98. `app/dashboard.py` skeleton + fleet view
 99. Asset drill-down page
 100. Alert inbox + SHAP waterfall

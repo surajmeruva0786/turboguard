@@ -1,13 +1,13 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, end of Phase L. This file is the
+Last updated: 2026-08-01, session 2, end of Phase M. This file is the
 single source of truth for "what's done" and "what's next" — read this
 before resuming.
 
-## Progress: 97 / 120 roadmap steps committed (Phases A–L done, Phase M next)
+## Progress: 105 / 120 roadmap steps committed (Phases A–M done, Phase N next)
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
-log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **132
+log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **141
 passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
 
 ### Done
@@ -74,17 +74,23 @@ passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
   `notebooks/README.md` indexes them with regeneration commands. Jupyter
   itself isn't in `requirements.txt` (not needed by the deployable app).
 
-### Not started yet (Phases M → O)
+- **Phase M — Streamlit dashboard**: `app/data_access.py` (business logic,
+  no Streamlit import, unit-testable — builds a 6-asset demo fleet: 4 CWRU
+  load conditions with a clearly-labelled RUL heuristic since CWRU has no
+  run-to-failure data, + 2 real IMS bearing trajectories), `app/
+  dashboard.py` (3-page sidebar app: Fleet View, Asset Drill-down, Alert
+  Inbox; PDF export via reportlab). Verified two ways: `AppTest` headless
+  harness (`tests/test_dashboard_smoke.py`) and a real `streamlit run`
+  server that was curl-checked (HTTP 200) then stopped.
+
+### Not started yet (Phase N → O)
 
 Full detail in `docs/ROADMAP.md`. In order:
 
-1. **Phase M — Streamlit dashboard** (fleet view, drill-down, alert
-   inbox, maintenance recommendations — logic already exists in
-   `src/utils/reports.recommend_from_rul` — PDF export).
-2. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
+1. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
    `.streamlit/config.toml`, full CI test matrix, `docs/DEPLOYMENT.md`,
    an end-to-end pipeline orchestration script.
-3. **Phase O — Final polish**: update README's Results section with the
+2. **Phase O — Final polish**: update README's Results section with the
    real measured (synthetic-scale) numbers instead of the placeholder
    literature-style table, `CHANGELOG.md`, full lint pass, `v0.1.0` tag.
 
@@ -93,13 +99,13 @@ Full detail in `docs/ROADMAP.md`. In order:
 ```bash
 cd Z:\turboguard
 source .venv/Scripts/activate   # already has all requirements.txt installed
-pytest -q                        # should show 132 passed
+pytest -q                        # should show 141 passed
 ```
 
-Then continue at "Phase M" above — same pattern as every prior step:
+Then continue at "Phase N" above — same pattern as every prior step:
 implement, write tests against the committed synthetic data (not mocks),
 run them, commit, push. Commit message convention: `feat(step-N/120): ...`
-(see `git log` for exact numbering so far; next commit should be step 98).
+(see `git log` for exact numbering so far; next commit should be step 106).
 
 ## Key design decisions worth knowing before continuing
 
