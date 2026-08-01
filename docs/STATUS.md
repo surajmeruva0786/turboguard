@@ -1,13 +1,13 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, end of Phase I. This file is the
+Last updated: 2026-08-01, session 2, end of Phase J. This file is the
 single source of truth for "what's done" and "what's next" — read this
 before resuming.
 
-## Progress: 80 / 120 roadmap steps committed (Phases A–I done, Phase J next)
+## Progress: 85 / 120 roadmap steps committed (Phases A–J done, Phase K next)
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
-log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **119
+log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **126
 passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
 
 ### Done
@@ -47,13 +47,22 @@ passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
   `results/rul_ims/config.yaml` note; this is a pipeline-correctness
   check, not a benchmark claim.
 
-### Not started yet (Phases J → O)
+- **Phase J — Cross-condition/cross-dataset evaluation**:
+  `src/evaluation/cross_condition.py` (classical model trained on CWRU
+  loads {0,1,2}, tested on load {3} — accuracy 1.0 on this tiny synthetic
+  set, same caveat as the within-condition classical baselines), committed
+  to `results/cross_condition/`. `src/evaluation/cross_dataset.py`
+  (trained on CWRU, tested on synthetic IMS — accuracy **0.025**, a real
+  and expected result: the IMS synthetic generator uses different fault
+  physics/severity than CWRU's, so this demonstrates genuine domain shift,
+  not a bug — see `results/cross_dataset/metrics.json`), committed to
+  `results/cross_dataset/`.
+
+### Not started yet (Phases K → O)
 
 Full detail in `docs/ROADMAP.md`. In order:
 
-1. **Phase J — Cross-condition/cross-dataset evaluation**: train on loads
-   {0,1,2} test on {3}; train on CWRU test on IMS.
-2. **Phase K — XAI**: SHAP tree/deep explainers, the bearing-frequency
+1. **Phase K — XAI**: SHAP tree/deep explainers, the bearing-frequency
    physical-justification annotator (builds on
    `src/features/bearing_freqs.closest_characteristic_frequency` and
    `src/features/envelope.dominant_envelope_peak`, both already done).
@@ -74,13 +83,13 @@ Full detail in `docs/ROADMAP.md`. In order:
 ```bash
 cd Z:\turboguard
 source .venv/Scripts/activate   # already has all requirements.txt installed
-pytest -q                        # should show 101 passed
+pytest -q                        # should show 126 passed
 ```
 
-Then continue at "Phase I" above — same pattern as every prior step:
+Then continue at "Phase K" above — same pattern as every prior step:
 implement, write tests against the committed synthetic data (not mocks),
 run them, commit, push. Commit message convention: `feat(step-N/120): ...`
-(see `git log` for exact numbering so far; next commit should be step 73).
+(see `git log` for exact numbering so far; next commit should be step 86).
 
 ## Key design decisions worth knowing before continuing
 

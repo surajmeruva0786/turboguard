@@ -17,7 +17,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–I complete (119 tests passing), Phase J next.
+2026-08-01: Phases A–J complete (126 tests passing), Phase K next.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -117,7 +117,7 @@ done, what's next, and how to resume a session. Short version as of
 79. `tests/test_rul_metrics.py`
 80. Evaluate RUL on synthetic IMS
 
-## Phase J — Cross-condition / cross-dataset evaluation (81–85)
+## Phase J — Cross-condition / cross-dataset evaluation (81–85) ✅ done
 81. `src/evaluation/cross_condition.py`
 82. `tests/test_cross_condition.py`
 83. Run cross-condition evaluation
