@@ -1,0 +1,7 @@
+note: "Evaluated on the tiny 2-bearing synthetic IMS set; direct-regression checkpoint\
+  \ was smoke-trained on this same data (not held out) \u2014 this is a pipeline-correctness\
+  \ check, not a benchmark claim."
+fit_bearing: 1
+test_bearing: 2
+seq_len: 10
+n_healthy_snapshots: 5

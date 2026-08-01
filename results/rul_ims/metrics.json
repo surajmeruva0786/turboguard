@@ -1,0 +1,24 @@
+{
+  "fit_bearing": 1,
+  "test_bearing": 2,
+  "weight_direct": 1.0,
+  "threshold": 10000.0,
+  "health_indicator_only": {
+    "rmse": 5.306241590733594,
+    "mape": 86.66048050648367,
+    "phm_score": 4.985160215903754,
+    "n_samples": 11
+  },
+  "direct_regression_only": {
+    "rmse": 3.1446284023930633,
+    "mape": 37298221.58458293,
+    "phm_score": 3.017777273777072,
+    "n_samples": 11
+  },
+  "combined": {
+    "rmse": 3.1446284023930633,
+    "mape": 37298221.58458293,
+    "phm_score": 3.017777273777072,
+    "n_samples": 11
+  }
+}
