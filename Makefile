@@ -1,4 +1,4 @@
-.PHONY: install test lint format synthetic preprocess features train-classical train-deep dashboard clean
+.PHONY: install test lint format synthetic preprocess features train-classical train-deep dashboard pipeline docker-build docker-run clean
 
 install:
 	pip install -r requirements.txt
@@ -32,6 +32,15 @@ train-deep:
 
 dashboard:
 	streamlit run app/dashboard.py
+
+pipeline:
+	python scripts/run_full_pipeline.py
+
+docker-build:
+	docker build -t turboguard:latest .
+
+docker-run:
+	docker run --rm -p 8501:8501 turboguard:latest
 
 clean:
 	rm -rf .pytest_cache .ruff_cache .coverage htmlcov
