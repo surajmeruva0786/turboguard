@@ -1,13 +1,13 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, end of Phase J. This file is the
+Last updated: 2026-08-01, session 2, end of Phase L. This file is the
 single source of truth for "what's done" and "what's next" — read this
 before resuming.
 
-## Progress: 85 / 120 roadmap steps committed (Phases A–J done, Phase K next)
+## Progress: 97 / 120 roadmap steps committed (Phases A–L done, Phase M next)
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
-log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **126
+log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **132
 passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
 
 ### Done
@@ -58,23 +58,33 @@ passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
   not a bug — see `results/cross_dataset/metrics.json`), committed to
   `results/cross_dataset/`.
 
-### Not started yet (Phases K → O)
+- **Phase K — XAI**: `src/xai/shap_tree.py` (TreeExplainer wrapper for
+  RF/XGBoost, named-feature attributions), `src/xai/shap_deep.py` (small
+  `FeatureMLP` proxy over the engineered feature vector + GradientExplainer
+  — documented design choice since the real deep model consumes raw
+  waveforms with no named features to attribute), `src/xai/
+  bearing_freq_annotator.py` (physical-justification message generator),
+  `src/xai/explain.py` CLI, sample report committed to
+  `results/xai/sample_0/`.
+- **Phase L — Notebooks**: all 5 notebooks (`01_dataset_eda` →
+  `05_xai_walkthrough`) written as hand-built nbformat-4 JSON, executed
+  headlessly via `nbclient` to verify they run end-to-end and bake in
+  real outputs before committing (caught and fixed a real bug:
+  `build_sample_explanation` didn't coerce `str` paths to `Path`).
+  `notebooks/README.md` indexes them with regeneration commands. Jupyter
+  itself isn't in `requirements.txt` (not needed by the deployable app).
+
+### Not started yet (Phases M → O)
 
 Full detail in `docs/ROADMAP.md`. In order:
 
-1. **Phase K — XAI**: SHAP tree/deep explainers, the bearing-frequency
-   physical-justification annotator (builds on
-   `src/features/bearing_freqs.closest_characteristic_frequency` and
-   `src/features/envelope.dominant_envelope_peak`, both already done).
-3. **Phase L — Notebooks** (EDA, envelope analysis, feature importance,
-   RUL trajectories, XAI walkthrough).
-4. **Phase M — Streamlit dashboard** (fleet view, drill-down, alert
+1. **Phase M — Streamlit dashboard** (fleet view, drill-down, alert
    inbox, maintenance recommendations — logic already exists in
    `src/utils/reports.recommend_from_rul` — PDF export).
-5. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
+2. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
    `.streamlit/config.toml`, full CI test matrix, `docs/DEPLOYMENT.md`,
    an end-to-end pipeline orchestration script.
-6. **Phase O — Final polish**: update README's Results section with the
+3. **Phase O — Final polish**: update README's Results section with the
    real measured (synthetic-scale) numbers instead of the placeholder
    literature-style table, `CHANGELOG.md`, full lint pass, `v0.1.0` tag.
 
@@ -83,13 +93,13 @@ Full detail in `docs/ROADMAP.md`. In order:
 ```bash
 cd Z:\turboguard
 source .venv/Scripts/activate   # already has all requirements.txt installed
-pytest -q                        # should show 126 passed
+pytest -q                        # should show 132 passed
 ```
 
-Then continue at "Phase K" above — same pattern as every prior step:
+Then continue at "Phase M" above — same pattern as every prior step:
 implement, write tests against the committed synthetic data (not mocks),
 run them, commit, push. Commit message convention: `feat(step-N/120): ...`
-(see `git log` for exact numbering so far; next commit should be step 86).
+(see `git log` for exact numbering so far; next commit should be step 98).
 
 ## Key design decisions worth knowing before continuing
 

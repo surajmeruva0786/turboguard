@@ -17,7 +17,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–J complete (126 tests passing), Phase K next.
+2026-08-01: Phases A–L complete (132 tests passing), Phase M next.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -124,7 +124,7 @@ done, what's next, and how to resume a session. Short version as of
 84. `src/evaluation/cross_dataset.py`
 85. Run cross-dataset evaluation
 
-## Phase K — Explainability / XAI (86–92)
+## Phase K — Explainability / XAI (86–92) ✅ done
 86. `src/xai/shap_tree.py`
 87. `src/xai/shap_deep.py`
 88. `src/xai/bearing_freq_annotator.py`
@@ -133,7 +133,7 @@ done, what's next, and how to resume a session. Short version as of
 91. Generate sample SHAP report
 92. `notebooks/05_xai_walkthrough.ipynb`
 
-## Phase L — Notebooks (93–97)
+## Phase L — Notebooks (93–97) ✅ done
 93. `notebooks/01_dataset_eda.ipynb`
 94. `notebooks/02_envelope_analysis.ipynb`
 95. `notebooks/03_feature_importance.ipynb`
