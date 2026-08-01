@@ -30,7 +30,19 @@ jobs:
         run: ruff check src tests app scripts
 
       - name: Run tests
-        run: pytest -q --cov=src --cov-report=term-missing
+        run: |
+          set +e
+          pytest -q --cov=src --cov-report=term-missing 2>&1 | tee pytest_output.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            {
+              echo '## Test failure output'
+              echo '```'
+              tail -n 300 pytest_output.log
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
 
   full-pipeline-smoke:
     runs-on: ubuntu-latest
