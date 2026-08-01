@@ -34,8 +34,9 @@ logger = get_logger(__name__)
 
 
 def build_sample_explanation(
-    model_dir: Path, processed_dir: Path, sample_idx: int, top_n: int = 10
+    model_dir: str | Path, processed_dir: str | Path, sample_idx: int, top_n: int = 10
 ) -> dict:
+    model_dir, processed_dir = Path(model_dir), Path(processed_dir)
     clf = ClassicalFaultClassifier.load(model_dir / "model.joblib")
     df = pd.read_parquet(processed_dir / "features.parquet")
     feature_cols = [c for c in df.columns if c not in CWRU_METADATA_COLUMNS]
