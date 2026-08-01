@@ -1,14 +1,15 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, end of Phase M. This file is the
+Last updated: 2026-08-01, session 2, end of Phase N. This file is the
 single source of truth for "what's done" and "what's next" — read this
 before resuming.
 
-## Progress: 105 / 120 roadmap steps committed (Phases A–M done, Phase N next)
+## Progress: 114 / 120 roadmap steps committed (Phases A–N done, Phase O next)
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
 log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **141
-passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
+passing, 0 failing**, verified from a **fully clean artifact state**
+(`pytest -q` from repo root with `.venv` activated).
 
 ### Done
 
@@ -83,14 +84,37 @@ passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
   harness (`tests/test_dashboard_smoke.py`) and a real `streamlit run`
   server that was curl-checked (HTTP 200) then stopped.
 
-### Not started yet (Phase N → O)
+- **Phase N — Deployment & CI**: `Dockerfile` (built successfully, 3.67GB,
+  verified with `docker build`), `docker-compose.yml`, `.dockerignore`,
+  `.streamlit/config.toml`, `scripts/entrypoint.sh` (dispatches
+  `dashboard`/`pipeline`/`test`), `scripts/run_full_pipeline.py`
+  (end-to-end orchestration, verified reproducible — reran it and only
+  `elapsed_seconds` differed, all loss/metric values identical),
+  `docs/DEPLOYMENT.md`, CI matrix (Python 3.11 + 3.12) plus a
+  `full-pipeline-smoke` job. **Also found and fixed a real, pre-existing
+  bug while wiring this up**: `ruff --fix` caught genuine import-sort
+  violations across ~26 files that had never actually been linted in CI
+  (every CI run back to the very first commit had been failing at the
+  Lint step — confirmed via the GitHub Actions API run history, 87/87
+  runs). After fixing lint, a second bug surfaced: `tests/
+  test_dashboard_utils.py` / `test_dashboard_smoke.py` load
+  `runs/random_forest_cwru/model.joblib` and
+  `data/processed/*/features.parquet` from disk — both gitignored/
+  regenerable — which only existed locally from manual pipeline runs
+  earlier in the session, so a genuinely fresh checkout (any CI runner,
+  any new clone) would hit `FileNotFoundError`. Reproduced by hiding both
+  locally; fixed with `tests/conftest.py` (session-scoped autouse fixture
+  that generates them if missing) — verified all 141 tests pass from a
+  fully clean artifact state. **Local environment note**: this machine's
+  C: drive is at 99% disk usage (pre-existing, unrelated to this repo),
+  which made Docker Desktop intermittently unresponsive mid-session —
+  worth the user's attention independent of this project.
 
-Full detail in `docs/ROADMAP.md`. In order:
+### Not started yet (Phase O)
 
-1. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
-   `.streamlit/config.toml`, full CI test matrix, `docs/DEPLOYMENT.md`,
-   an end-to-end pipeline orchestration script.
-2. **Phase O — Final polish**: update README's Results section with the
+Full detail in `docs/ROADMAP.md`.
+
+1. **Phase O — Final polish**: update README's Results section with the
    real measured (synthetic-scale) numbers instead of the placeholder
    literature-style table, `CHANGELOG.md`, full lint pass, `v0.1.0` tag.
 
@@ -102,10 +126,10 @@ source .venv/Scripts/activate   # already has all requirements.txt installed
 pytest -q                        # should show 141 passed
 ```
 
-Then continue at "Phase N" above — same pattern as every prior step:
+Then continue at "Phase O" above — same pattern as every prior step:
 implement, write tests against the committed synthetic data (not mocks),
 run them, commit, push. Commit message convention: `feat(step-N/120): ...`
-(see `git log` for exact numbering so far; next commit should be step 106).
+(see `git log` for exact numbering so far; next commit should be step 115).
 
 ## Key design decisions worth knowing before continuing
 

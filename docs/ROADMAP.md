@@ -17,7 +17,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–M complete (141 tests passing), Phase N next.
+2026-08-01: Phases A–N complete (141 tests passing), Phase O next.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -150,7 +150,7 @@ done, what's next, and how to resume a session. Short version as of
 104. `tests/test_dashboard_utils.py`
 105. Dashboard smoke test (headless)
 
-## Phase N — Deployment & CI (106–114)
+## Phase N — Deployment & CI (106–114) ✅ done
 106. `Dockerfile`
 107. `docker-compose.yml`
 108. `.dockerignore`
