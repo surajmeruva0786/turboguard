@@ -8,31 +8,33 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from scipy.optimize import curve_fit
-
-
-def _exp_model(t: np.ndarray, a: float, b: float) -> np.ndarray:
-    return a * np.exp(b * t)
 
 
 def fit_exponential_degradation(
-    time_index: np.ndarray, hi_values: np.ndarray, floor: float = 1e-6
+    time_index: np.ndarray, hi_values: np.ndarray, floor: float = 1e-6, max_growth_rate: float = 5.0
 ) -> tuple[float, float]:
-    """Fit ``a, b`` in ``HI(t) = a * exp(b*t)`` via nonlinear least squares.
+    """Fit ``a, b`` in ``HI(t) = a * exp(b*t)`` via log-linear least squares.
 
-    ``hi_values`` are clipped to ``floor`` before fitting since reconstruction
-    error is expected to be non-negative but can be exactly zero for
-    near-perfect reconstructions.
+    Linearising to ``log(HI) = log(a) + b*t`` and fitting with
+    :func:`numpy.polyfit` is far more numerically stable on the handful of
+    noisy points typical of an in-progress trajectory than nonlinear
+    least-squares, which can diverge to absurd ``b`` values with few points
+    (verified: unconstrained ``scipy.optimize.curve_fit`` produced
+    ``b > 50`` and thresholds of ~1e21 on this project's tiny synthetic
+    IMS set). ``hi_values`` are floored before the log to handle exact
+    zeros; the fitted growth rate is clamped to ``max_growth_rate`` for the
+    same reason.
     """
     time_index = np.asarray(time_index, dtype=np.float64)
     hi_safe = np.clip(np.asarray(hi_values, dtype=np.float64), floor, None)
-    a0 = max(float(hi_safe[0]), floor)
-    b0 = 0.05
-    try:
-        (a, b), _ = curve_fit(_exp_model, time_index, hi_safe, p0=[a0, b0], maxfev=10000)
-    except RuntimeError:
-        a, b = a0, b0
-    return float(a), float(b)
+
+    if len(time_index) < 2:
+        return max(float(hi_safe[0]), floor), 0.0
+
+    b, log_a = np.polyfit(time_index, np.log(hi_safe), deg=1)
+    b = float(np.clip(b, -max_growth_rate, max_growth_rate))
+    a = max(float(np.exp(log_a)), floor)
+    return a, b
 
 
 def predict_time_to_threshold(a: float, b: float, threshold: float, current_time: float = 0.0) -> float:

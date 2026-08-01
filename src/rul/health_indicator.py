@@ -24,14 +24,21 @@ class HealthIndicatorModel:
     feature_mean: np.ndarray
     feature_std: np.ndarray
 
-    def compute(self, X: np.ndarray) -> np.ndarray:
-        """Health indicator (reconstruction error) for each row of ``X``, shape ``(n,)``."""
+    def compute(self, X: np.ndarray, clip: float = 1e4) -> np.ndarray:
+        """Health indicator (reconstruction error) for each row of ``X``, shape ``(n,)``.
+
+        ``clip`` bounds the raw MSE: with a tiny healthy-only training set,
+        reconstruction error on a severely out-of-distribution (heavily
+        degraded) input can extrapolate to an unbounded value that carries
+        no additional signal beyond "very unhealthy" and would otherwise
+        risk float overflow in the downstream degradation-curve fit.
+        """
         X_norm = (np.asarray(X, dtype=np.float64) - self.feature_mean) / self.feature_std
         x = torch.from_numpy(X_norm.astype(np.float32))
         self.autoencoder.eval()
         with torch.no_grad():
             err = self.autoencoder.reconstruction_error(x)
-        return err.numpy()
+        return np.clip(err.numpy(), 0.0, clip)
 
 
 def fit_health_indicator_model(
@@ -40,6 +47,7 @@ def fit_health_indicator_model(
     hidden_dims: tuple[int, ...] = (64, 32),
     epochs: int = 300,
     lr: float = 1e-2,
+    weight_decay: float = 1e-3,
     seed: int = 42,
 ) -> HealthIndicatorModel:
     """Fit a :class:`FeatureAutoencoder` on healthy-only feature vectors.
@@ -47,7 +55,11 @@ def fit_health_indicator_model(
     ``X_healthy`` has shape ``(n_healthy_windows, n_features)``. Features are
     standardised (z-score, healthy-population stats) before fitting so the
     reconstruction-error scale is comparable across differently-scaled
-    engineered features.
+    engineered features. ``weight_decay`` regularises the (typically
+    heavily overparameterised relative to a small healthy-only sample set)
+    autoencoder so reconstruction error on far out-of-distribution
+    (degraded) inputs stays a meaningful monitoring signal instead of
+    exploding from unconstrained extrapolation.
     """
     set_seed(seed)
     X_healthy = np.asarray(X_healthy, dtype=np.float64)
@@ -57,7 +69,7 @@ def fit_health_indicator_model(
     X_norm = (X_healthy - mean) / std
 
     model = FeatureAutoencoder(input_dim=X_healthy.shape[1], latent_dim=latent_dim, hidden_dims=hidden_dims)
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     x = torch.from_numpy(X_norm.astype(np.float32))
 
     model.train()
