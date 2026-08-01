@@ -20,7 +20,6 @@ import streamlit as st
 
 from app.data_access import (
     DEFAULT_IMS_DIR,
-    HEALTH_COLORS,
     alert_inbox,
     build_fleet_table,
     generate_maintenance_report_pdf,

@@ -1,11 +1,14 @@
 import numpy as np
 import pytest
-
 from src.features.bearing_freqs import CWRU_DRIVE_END_BEARING
 from src.models.classical import ClassicalFaultClassifier
 from src.xai.bearing_freq_annotator import annotate_alert
 from src.xai.shap_deep import explain_deep_model, train_feature_mlp
-from src.xai.shap_tree import explain_tree_model, top_features_for_class, top_features_for_prediction
+from src.xai.shap_tree import (
+    explain_tree_model,
+    top_features_for_class,
+    top_features_for_prediction,
+)
 
 
 def _toy_classification_data(n_per_class=8, n_classes=3, n_features=6, seed=0):

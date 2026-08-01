@@ -1,5 +1,4 @@
 import torch
-
 from src.models.autoencoder import FeatureAutoencoder
 from src.models.turboguard_cnn import CNNEncoder, TurboGuardCNN
 from src.models.turboguard_hybrid import TurboGuardHybrid

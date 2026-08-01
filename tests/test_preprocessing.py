@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.preprocessing.conditioning import (
     antialias_lowpass,
     condition_signal,

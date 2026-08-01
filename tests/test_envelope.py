@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 from src.features.bearing_freqs import CWRU_DRIVE_END_BEARING, bpfo
 from src.features.envelope import dominant_envelope_peak, envelope_spectrum_features
 

@@ -25,10 +25,9 @@ from pathlib import Path
 
 import pandas as pd
 import requests
-from tqdm import tqdm
-
 from src.utils.io import ensure_dir
 from src.utils.logging_config import get_logger
+from tqdm import tqdm
 
 logger = get_logger(__name__)
 

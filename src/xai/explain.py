@@ -25,10 +25,10 @@ from src.data.dataset import FAULT_CLASSES
 from src.features.bearing_freqs import CWRU_DRIVE_END_BEARING
 from src.features.extract import CWRU_METADATA_COLUMNS
 from src.models.classical import ClassicalFaultClassifier
-from src.xai.bearing_freq_annotator import annotate_alert
-from src.xai.shap_tree import explain_tree_model, top_features_for_prediction
 from src.utils.io import ensure_dir, save_json
 from src.utils.logging_config import get_logger
+from src.xai.bearing_freq_annotator import annotate_alert
+from src.xai.shap_tree import explain_tree_model, top_features_for_prediction
 
 logger = get_logger(__name__)
 

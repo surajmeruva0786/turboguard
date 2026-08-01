@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from src.evaluation.rul_metrics import mape, phm_score, rmse, rul_metrics
 
 

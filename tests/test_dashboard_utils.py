@@ -1,6 +1,4 @@
 import pandas as pd
-import pytest
-
 from app.data_access import (
     alert_inbox,
     build_fleet_table,

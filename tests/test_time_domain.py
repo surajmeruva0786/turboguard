@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.features.time_domain import time_domain_features
 
 

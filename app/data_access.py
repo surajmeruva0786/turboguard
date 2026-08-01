@@ -18,7 +18,6 @@ import numpy as np
 import pandas as pd
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-
 from src.data.cwru_loader import align_channels
 from src.data.dataset import FAULT_CLASSES
 from src.data.ims_loader import IMSRecord, load_ims_dataset

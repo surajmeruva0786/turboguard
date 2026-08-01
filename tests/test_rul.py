@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 import torch
-
+from src.models.turboguard_hybrid import TurboGuardHybrid
 from src.rul.combine import combine_rul_estimates, learn_combination_weight
 from src.rul.degradation_model import (
     estimate_rul_from_trajectory,
@@ -10,7 +10,6 @@ from src.rul.degradation_model import (
 )
 from src.rul.direct_regression import piecewise_linear_rul_target, predict_rul
 from src.rul.health_indicator import fit_health_indicator_model
-from src.models.turboguard_hybrid import TurboGuardHybrid
 
 
 def test_piecewise_linear_rul_target_caps_at_default():

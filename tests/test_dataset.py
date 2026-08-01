@@ -1,5 +1,4 @@
 import torch
-
 from src.data.cwru_loader import load_cwru_dataset
 from src.data.dataset import (
     FAULT_CLASSES,

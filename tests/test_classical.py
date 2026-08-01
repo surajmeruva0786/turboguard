@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from sklearn.datasets import make_classification
-
 from src.models.classical import ClassicalFaultClassifier
 
 MODEL_NAMES = ["random_forest", "xgboost", "svm", "logistic_regression"]

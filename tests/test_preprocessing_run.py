@@ -1,8 +1,8 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
-
 from src.preprocessing.run import process_cwru, process_ims
-from pathlib import Path
 
 
 def test_process_cwru_writes_windows_and_metadata(tmp_path):

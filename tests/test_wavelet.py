@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.features.wavelet import wavelet_packet_features
 
 

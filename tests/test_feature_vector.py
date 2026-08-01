@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-
 from src.features.bearing_freqs import CWRU_DRIVE_END_BEARING
 from src.features.feature_vector import extract_feature_vector, feature_dict_to_array
 

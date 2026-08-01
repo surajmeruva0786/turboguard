@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.evaluation.classification import classification_metrics
 
 

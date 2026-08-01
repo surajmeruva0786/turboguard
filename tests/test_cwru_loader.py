@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.data.cwru_loader import align_channels, load_cwru_dataset
 
 SYNTHETIC_DIR = "data/raw/cwru/synthetic"

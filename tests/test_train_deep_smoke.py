@@ -9,7 +9,12 @@ from __future__ import annotations
 
 import argparse
 
-from src.training.train_deep import build_cnn_dataset, build_multitask_dataset, train_cnn, train_hybrid
+from src.training.train_deep import (
+    build_cnn_dataset,
+    build_multitask_dataset,
+    train_cnn,
+    train_hybrid,
+)
 from src.utils.io import load_yaml
 from src.utils.seed import set_seed
 

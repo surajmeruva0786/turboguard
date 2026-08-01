@@ -1,5 +1,4 @@
 import numpy as np
-
 from src.features.bearing_freqs import CWRU_DRIVE_END_BEARING, bpfo
 from src.features.frequency_domain import frequency_domain_features
 

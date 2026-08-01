@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from src.evaluation.cross_condition import cross_condition_evaluate
 
 
