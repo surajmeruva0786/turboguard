@@ -430,20 +430,32 @@ A **Streamlit + Plotly** dashboard (`app/dashboard.py`) provides:
 
 ```bash
 # 1. Clone
-git clone https://github.com/<your-username>/TurboGuard.git
-cd TurboGuard
+git clone https://github.com/surajmeruva0786/turboguard.git
+cd turboguard
 
-# 2. Conda environment
-conda create -n turboguard python=3.11 -y
-conda activate turboguard
+# 2. Virtual environment (venv or conda both work)
+python -m venv .venv
+source .venv/Scripts/activate   # Windows Git Bash; .venv/bin/activate on Linux/macOS
 
 # 3. Install dependencies
 pip install -r requirements.txt
+pip install -e .
 
-# 4. Download datasets
+# 4. (Optional) download real datasets — the repo ships a committed
+#    synthetic stand-in (data/raw/{cwru,ims}/synthetic/) so this step can
+#    be skipped entirely for a working demo (see data/README.md)
 python scripts/download_cwru.py
 python scripts/download_ims.py
 ```
+
+### Docker (alternative)
+
+```bash
+docker build -t turboguard:latest .
+docker run --rm -p 8501:8501 turboguard:latest   # dashboard at http://localhost:8501
+```
+
+See `docs/DEPLOYMENT.md` for docker-compose, health checks, and cloud deployment notes.
 
 ### Key Dependencies
 
@@ -473,11 +485,14 @@ tqdm==4.66.2
 ```bash
 python -m src.preprocessing.run \
     --dataset cwru \
-    --input_dir data/raw/cwru \
+    --input_dir data/raw/cwru/synthetic \
     --output_dir data/processed/cwru \
     --sfreq 12000 \
     --window 1.0 \
     --overlap 0.5
+
+python -m src.features.extract \
+    --dataset cwru --input_dir data/processed/cwru --output_dir data/processed/cwru
 ```
 
 ### Train classical baseline
@@ -486,7 +501,7 @@ python -m src.preprocessing.run \
 python -m src.training.train_classical \
     --model xgboost \
     --dataset cwru \
-    --output_dir runs/xgb_cwru
+    --output_dir runs/xgboost_cwru
 ```
 
 ### Train hybrid model (multi-task)
@@ -501,72 +516,109 @@ python -m src.training.train_deep \
     --output_dir runs/hybrid_multitask
 ```
 
-### Evaluate cross-condition
+### Evaluate cross-condition / cross-dataset generalisation
 
 ```bash
 python -m src.evaluation.cross_condition \
-    --checkpoint runs/hybrid_multitask/best.ckpt \
-    --train_loads 0 1 2 \
-    --test_load 3 \
+    --model random_forest --dataset cwru \
+    --train_loads 0 1 2 --test_load 3 \
     --output_dir results/cross_condition
+
+python -m src.evaluation.cross_dataset \
+    --model random_forest --train_dataset cwru --test_dataset ims \
+    --output_dir results/cross_dataset
 ```
 
-### Generate SHAP report
+### Evaluate RUL (direct regression + health-indicator + combined ensemble)
+
+```bash
+python -m src.evaluation.evaluate_rul --output_dir results/rul_ims
+```
+
+### Generate a SHAP + physical-justification explanation report
 
 ```bash
 python -m src.xai.explain \
-    --checkpoint runs/hybrid_multitask/best.ckpt \
-    --asset_file data/processed/ims/asset_03.npz \
-    --output_dir results/xai/asset_03
+    --model_dir runs/random_forest_cwru \
+    --processed_dir data/processed/cwru \
+    --sample_idx 0 \
+    --output_dir results/xai/sample_0
+```
+
+### Run the entire pipeline end-to-end
+
+```bash
+python scripts/run_full_pipeline.py
+# or: make pipeline
 ```
 
 ### Launch dashboard
 
 ```bash
 streamlit run app/dashboard.py
+# or: make dashboard
 ```
 
 ---
 
 ## 17. Project Structure
 
+The tree below matches the repository as it stands (120/120 roadmap steps
+committed — see `docs/ROADMAP.md`), not an aspirational plan.
+
 ```
 TurboGuard/
 ├── app/
-│   └── dashboard.py
+│   ├── dashboard.py            # 3-page Streamlit app (fleet/drill-down/alerts)
+│   └── data_access.py          # business logic, unit-testable without Streamlit
 ├── configs/
+│   ├── base.yaml
+│   ├── data.yaml
+│   ├── preprocessing.yaml
+│   ├── classical_baselines.yaml
 │   ├── turboguard_cnn.yaml
-│   ├── turboguard_hybrid.yaml
-│   └── classical_baselines.yaml
+│   └── turboguard_hybrid.yaml
 ├── data/
-│   ├── raw/                       # gitignored
-│   ├── processed/
+│   ├── raw/                    # real data gitignored; synthetic/ committed
+│   ├── processed/               # gitignored, regenerable
 │   └── README.md
+├── docs/
+│   ├── ROADMAP.md              # 120-step build log
+│   ├── STATUS.md               # session handoff notes
+│   └── DEPLOYMENT.md
 ├── notebooks/
 │   ├── 01_dataset_eda.ipynb
 │   ├── 02_envelope_analysis.ipynb
 │   ├── 03_feature_importance.ipynb
 │   ├── 04_rul_trajectories.ipynb
-│   └── 05_xai_walkthrough.ipynb
-├── runs/                          # gitignored
-├── results/
+│   ├── 05_xai_walkthrough.ipynb
+│   └── README.md
+├── runs/                       # gitignored except metrics.json/config.yaml
+├── results/                    # cross_condition/, cross_dataset/, rul_ims/, xai/
 ├── scripts/
+│   ├── generate_synthetic.py
 │   ├── download_cwru.py
 │   ├── download_ims.py
-│   └── verify_environment.py
+│   ├── verify_environment.py
+│   ├── run_full_pipeline.py    # end-to-end orchestration CLI
+│   └── entrypoint.sh           # Docker entrypoint
 ├── src/
 │   ├── data/
 │   │   ├── cwru_loader.py
 │   │   ├── ims_loader.py
 │   │   └── dataset.py
 │   ├── preprocessing/
+│   │   ├── conditioning.py
+│   │   ├── windowing.py
 │   │   └── run.py
 │   ├── features/
 │   │   ├── time_domain.py
 │   │   ├── frequency_domain.py
 │   │   ├── envelope.py
 │   │   ├── wavelet.py
-│   │   └── bearing_freqs.py
+│   │   ├── feature_vector.py
+│   │   ├── bearing_freqs.py
+│   │   └── extract.py
 │   ├── models/
 │   │   ├── classical.py
 │   │   ├── turboguard_cnn.py
@@ -575,24 +627,41 @@ TurboGuard/
 │   ├── rul/
 │   │   ├── direct_regression.py
 │   │   ├── health_indicator.py
-│   │   └── degradation_model.py
+│   │   ├── degradation_model.py
+│   │   └── combine.py
 │   ├── training/
 │   │   ├── train_classical.py
-│   │   └── train_deep.py
+│   │   ├── train_deep.py
+│   │   └── augmentation.py
 │   ├── evaluation/
 │   │   ├── classification.py
 │   │   ├── rul_metrics.py
-│   │   └── cross_condition.py
+│   │   ├── cross_condition.py
+│   │   ├── cross_dataset.py
+│   │   └── evaluate_rul.py
 │   ├── xai/
 │   │   ├── shap_tree.py
 │   │   ├── shap_deep.py
-│   │   └── bearing_freq_annotator.py
+│   │   ├── bearing_freq_annotator.py
+│   │   └── explain.py
 │   └── utils/
 │       ├── seed.py
+│       ├── logging_config.py
+│       ├── io.py
 │       └── reports.py
-├── tests/
+├── tests/                       # 141 tests, mirrors src/app/ 1:1; conftest.py
+│                                 # auto-generates gitignored pipeline fixtures
+├── .streamlit/config.toml
+├── .github/workflows/ci.yml     # lint + test matrix (3.11/3.12) + pipeline smoke
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+├── Makefile
+├── pyproject.toml
 ├── .gitignore
 ├── LICENSE
+├── CONTRIBUTING.md
+├── CHANGELOG.md
 ├── README.md
 └── requirements.txt
 ```
@@ -601,54 +670,80 @@ TurboGuard/
 
 ## 18. Results
 
-> *Numbers below are target benchmarks consistent with the published CWRU / IMS literature. Replace with your measured values after training.*
+> **These are real measured numbers from this repo's committed synthetic dataset** (`data/raw/{cwru,ims}/synthetic/`, `make train-classical`, `src.evaluation.*`) — not literature benchmarks. The synthetic CWRU set is tiny and cleanly separable by design (4 loads × 5 classes, one window per condition), so within-condition and cross-condition accuracy hitting 1.000 is an **expected pipeline-correctness result, not a claim of real-world performance**. Cross-dataset and RUL numbers are more representative of genuine difficulty, since they involve real domain shift and real IMS run-to-failure trajectories. Swapping in the real CWRU/IMS datasets (`configs/data.yaml`: `source: real`) requires no code changes and would produce literature-comparable numbers instead — see `docs/ROADMAP.md`'s data note and `docs/STATUS.md` for the full caveats behind each result below.
 
-### Fault Classification on CWRU (within-condition, 5-fold CV)
+### Fault Classification on CWRU (within-condition, 4-fold CV, synthetic data)
 
-| Model                  | Accuracy     | Macro-F1     |
-|------------------------|--------------|--------------|
-| Random Forest          | 0.96 ± 0.01  | 0.95 ± 0.02  |
-| XGBoost                | 0.97 ± 0.01  | 0.96 ± 0.01  |
-| TurboGuard-CNN         | 0.98 ± 0.01  | 0.98 ± 0.01  |
-| **TurboGuard-Hybrid**  | **0.99 ± 0.005** | **0.99 ± 0.005** |
+| Model                  | Accuracy | Macro-F1 |
+|------------------------|----------|----------|
+| Random Forest          | 1.000    | 1.000    |
+| XGBoost                | 1.000    | 1.000    |
+| SVM                    | 1.000    | 1.000    |
+| Logistic Regression    | 1.000    | 1.000    |
 
-### Fault Classification (cross-condition: train on loads 0,1,2, test on 3)
+*(source: `runs/{random_forest,xgboost,svm,logistic_regression}_cwru/metrics.json`)*
 
-| Model                  | Accuracy     | Macro-F1     |
-|------------------------|--------------|--------------|
-| Random Forest          | 0.85 ± 0.02  | 0.83 ± 0.03  |
-| XGBoost                | 0.88 ± 0.02  | 0.86 ± 0.02  |
-| TurboGuard-CNN         | 0.91 ± 0.02  | 0.90 ± 0.02  |
-| **TurboGuard-Hybrid**  | **0.94 ± 0.01** | **0.93 ± 0.01** |
+TurboGuard-CNN and TurboGuard-Hybrid were smoke-trained (3 epochs, no
+held-out split — see `runs/{cnn,hybrid}_smoke/metrics.json`) to verify the
+training loop wires together end-to-end, reaching final training losses of
+1.24 (CNN, cross-entropy) and 2.31 (Hybrid, weighted CE+Huber); a full
+120-epoch run with held-out evaluation was out of scope for this
+synthetic-scale demo but requires no code changes — `make train-deep` runs
+the exact same CLI at full scale.
 
-### RUL Estimation on IMS (Bearing 1)
+### Fault Classification (cross-condition: train loads 0,1,2 → test load 3, synthetic CWRU)
 
-| Model                  | RMSE (cycles) | MAPE       | PHM Score |
-|------------------------|---------------|------------|-----------|
-| Health Indicator only  | 38            | 22 %       | 410       |
-| Direct regression      | 32            | 19 %       | 380       |
-| **Combined (TurboGuard)** | **26**     | **15 %**   | **310**   |
+| Model         | Accuracy | Macro-F1 |
+|---------------|----------|----------|
+| Random Forest | 1.000    | 1.000    |
 
-### Confusion Matrix (Hybrid model, cross-condition)
+*(source: `results/cross_condition/metrics.json`; same "tiny, separable synthetic set" caveat as above)*
 
-```
-                Pred_H   Pred_IR  Pred_OR  Pred_B   Pred_C
-True_Healthy     0.97     0.01     0.01     0.00     0.01
-True_InnerRace   0.01     0.94     0.02     0.02     0.01
-True_OuterRace   0.01     0.02     0.95     0.01     0.01
-True_Ball        0.01     0.03     0.02     0.92     0.02
-True_Compound    0.01     0.02     0.02     0.03     0.92
-```
+### Cross-Dataset (train CWRU → test synthetic IMS, Random Forest)
+
+| Metric   | Value |
+|----------|-------|
+| Accuracy | 0.025 |
+| Macro-F1 | 0.010 |
+
+*(source: `results/cross_dataset/metrics.json`)* This is a **real, expected
+result**, not a bug: the synthetic IMS generator uses different fault
+physics/severity parameters than the synthetic CWRU generator, so a
+classifier trained purely on CWRU features generalises poorly — exactly
+the kind of domain-shift failure mode README section 11.1 calls "the
+toughest test." It demonstrates the evaluation pipeline correctly
+surfaces a hard case rather than only ever reporting flattering numbers.
+
+### RUL Estimation on synthetic IMS (fit bearing 1 → test bearing 2)
+
+| Method                     | RMSE (cycles) | MAPE      | PHM Score |
+|-----------------------------|---------------|-----------|-----------|
+| Health Indicator only        | 5.31          | 86.7 %    | 4.99      |
+| Direct regression             | 3.14          | 3.7×10⁷ % | 3.02      |
+| **Combined (TurboGuard)**    | **3.14**      | 3.7×10⁷ % | 3.02      |
+
+*(source: `results/rul_ims/metrics.json`)* The learned ensemble weight is
+1.0 (all direct regression) — correct behaviour given the direct model
+clearly outperformed the health-indicator approach on the fit bearing, so
+`src.rul.combine.learn_combination_weight` chose to trust it fully. MAPE
+is astronomically large because true RUL passes through 0 at failure
+(division by ~0); RMSE and PHM score are the meaningful metrics here. See
+`docs/STATUS.md` for the full caveat: the direct-regression checkpoint was
+smoke-trained on this same synthetic data (not a genuinely held-out
+model), so this is a pipeline-correctness check, not a benchmark claim.
 
 ---
 
 ## 19. Reproducibility
 
-- Fixed seed (`42`) across NumPy, PyTorch, and Python's `random`.
-- CUDA determinism enabled (`torch.use_deterministic_algorithms(True)`).
+- Fixed seed (`42`) across NumPy, PyTorch, and Python's `random` (`src/utils/seed.py`).
+- CUDA determinism requested (`torch.use_deterministic_algorithms(True, warn_only=True)`).
 - Dependencies pinned in `requirements.txt`.
-- All hyperparameters stored as YAML files and logged with each run.
-- Pre-processed dataset checksums published with checkpoints.
+- All hyperparameters stored as YAML `config.yaml` alongside each run's `metrics.json`.
+- `scripts/run_full_pipeline.py` reruns the entire pipeline from a clean
+  checkout; rerunning it during development reproduced identical loss/
+  metric values (only wall-clock `elapsed_seconds` differed) — see
+  `docs/STATUS.md`.
 
 ---
 
@@ -690,9 +785,9 @@ True_Compound    0.01     0.02     0.02     0.03     0.92
 ```bibtex
 @misc{turboguard2026,
   title  = {TurboGuard: Predictive Maintenance and RUL Estimation for Industrial Rotating Equipment},
-  author = {<Your Name>},
+  author = {Meruva, Suraj},
   year   = {2026},
-  howpublished = {\url{https://github.com/<your-username>/TurboGuard}}
+  howpublished = {\url{https://github.com/surajmeruva0786/turboguard}}
 }
 ```
 
@@ -717,10 +812,9 @@ The CWRU and IMS datasets remain the property of their original publishers and a
 
 ## 26. Contact
 
-**<Your Name>**
+**Suraj Meruva**
 B.Tech., Indian Institute of Information Technology, Naya Raipur
-Email: `<your.email@iiitnr.edu.in>`
-GitHub: [@<your-username>](https://github.com/<your-username>)
-LinkedIn: [linkedin.com/in/<your-username>](https://linkedin.com/in/<your-username>)
+Email: `meruva24102@iiitnr.edu.in`
+GitHub: [@surajmeruva0786](https://github.com/surajmeruva0786)
 
 For research, internship, or collaboration discussions, please reach out via email.
