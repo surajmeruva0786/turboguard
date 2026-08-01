@@ -1,0 +1,5 @@
+model: random_forest
+train_dataset: cwru
+test_dataset: ims
+seed: 42
+n_common_features: 176
