@@ -1,13 +1,13 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, end of Phase H. This file is the
+Last updated: 2026-08-01, session 2, end of Phase I. This file is the
 single source of truth for "what's done" and "what's next" — read this
 before resuming.
 
-## Progress: 72 / 120 roadmap steps committed (Phases A–H done, Phase I next)
+## Progress: 80 / 120 roadmap steps committed (Phases A–I done, Phase J next)
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
-log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **101
+log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **119
 passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
 
 ### Done
@@ -31,30 +31,41 @@ passing, 0 failing** (`pytest -q` from repo root with `.venv` activated).
   `runs/hybrid_smoke/` (`metrics.json` + `config.yaml`; `model.pt`
   gitignored, regenerable via the same CLI commands, see README section 16).
 
-### Not started yet (Phases I → O)
+- **Phase I — RUL estimation**: `src/rul/direct_regression.py`
+  (piecewise-linear-capped target + hybrid-checkpoint predictor),
+  `src/rul/health_indicator.py` (`FeatureAutoencoder`-based HI, AdamW +
+  weight decay, clipped to avoid float blowup on tiny out-of-distribution
+  inputs — see `docs/STATUS.md` git history step-80 fix commit),
+  `src/rul/degradation_model.py` (log-linear exponential-fit RUL
+  extrapolation — more stable than nonlinear `curve_fit` on few noisy
+  points), `src/rul/combine.py` (grid-searched weighted ensemble),
+  `src/evaluation/rul_metrics.py` (RMSE/MAPE/PHM asymmetric score),
+  `src/evaluation/evaluate_rul.py` evaluated bearing1→bearing2 on the
+  synthetic IMS set, committed to `results/rul_ims/`. **Caveat**: the
+  direct-regression checkpoint (`runs/hybrid_smoke/model.pt`) was
+  smoke-trained on this same synthetic data, not held out — see
+  `results/rul_ims/config.yaml` note; this is a pipeline-correctness
+  check, not a benchmark claim.
+
+### Not started yet (Phases J → O)
 
 Full detail in `docs/ROADMAP.md`. In order:
 
-1. **Phase I — RUL estimation**: direct regression (reuse the hybrid
-   model's RUL head), health-indicator + degradation-model approach (uses
-   `FeatureAutoencoder`, fit `HI(t) = a * exp(b*t)` to trajectories),
-   combined weighted-average ensemble, RUL metrics (RMSE/MAPE/PHM score),
-   evaluate on synthetic IMS.
-2. **Phase J — Cross-condition/cross-dataset evaluation**: train on loads
+1. **Phase J — Cross-condition/cross-dataset evaluation**: train on loads
    {0,1,2} test on {3}; train on CWRU test on IMS.
-3. **Phase K — XAI**: SHAP tree/deep explainers, the bearing-frequency
+2. **Phase K — XAI**: SHAP tree/deep explainers, the bearing-frequency
    physical-justification annotator (builds on
    `src/features/bearing_freqs.closest_characteristic_frequency` and
    `src/features/envelope.dominant_envelope_peak`, both already done).
-4. **Phase L — Notebooks** (EDA, envelope analysis, feature importance,
+3. **Phase L — Notebooks** (EDA, envelope analysis, feature importance,
    RUL trajectories, XAI walkthrough).
-5. **Phase M — Streamlit dashboard** (fleet view, drill-down, alert
+4. **Phase M — Streamlit dashboard** (fleet view, drill-down, alert
    inbox, maintenance recommendations — logic already exists in
    `src/utils/reports.recommend_from_rul` — PDF export).
-6. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
+5. **Phase N — Deployment & CI**: Dockerfile, docker-compose,
    `.streamlit/config.toml`, full CI test matrix, `docs/DEPLOYMENT.md`,
    an end-to-end pipeline orchestration script.
-7. **Phase O — Final polish**: update README's Results section with the
+6. **Phase O — Final polish**: update README's Results section with the
    real measured (synthetic-scale) numbers instead of the placeholder
    literature-style table, `CHANGELOG.md`, full lint pass, `v0.1.0` tag.
 

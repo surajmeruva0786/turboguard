@@ -17,7 +17,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–H complete (101 tests passing), Phase I next.
+2026-08-01: Phases A–I complete (119 tests passing), Phase J next.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -107,7 +107,7 @@ done, what's next, and how to resume a session. Short version as of
 71. Train hybrid multitask smoke run
 72. `tests/test_train_deep_smoke.py`
 
-## Phase I — RUL estimation (73–80)
+## Phase I — RUL estimation (73–80) ✅ done
 73. `src/rul/direct_regression.py`
 74. `src/rul/health_indicator.py`
 75. `src/rul/degradation_model.py`
