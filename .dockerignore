@@ -1,0 +1,36 @@
+.git/
+.github/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Real licensed datasets shouldn't be baked into the image; mount data/ instead.
+data/raw/cwru/[!s]*
+data/raw/ims/[!s]*
+
+# Large binaries — mount runs/ instead of baking checkpoints into the image.
+*.ckpt
+*.pt
+*.pth
+*.joblib
+*.pkl
+
+.ipynb_checkpoints/
+notebooks/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.env
+.env.local
+.streamlit/secrets.toml
