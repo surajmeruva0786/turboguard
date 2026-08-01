@@ -1,0 +1,49 @@
+{
+  "sample_idx": 0,
+  "true_class": "healthy",
+  "predicted_class": "healthy",
+  "confidence": 0.942,
+  "top_features": [
+    {
+      "name": "y_env_BPFO_h1_amp",
+      "shap_value": 0.011371759259259257
+    },
+    {
+      "name": "y_env_BPFO_h2_amp",
+      "shap_value": 0.01122769758019758
+    },
+    {
+      "name": "y_mean_frequency_hz",
+      "shap_value": 0.011166114163614165
+    },
+    {
+      "name": "z_margin_factor",
+      "shap_value": 0.010286897685647686
+    },
+    {
+      "name": "x_spectral_centroid_hz",
+      "shap_value": 0.010257034215784217
+    },
+    {
+      "name": "y_hjorth_complexity",
+      "shap_value": 0.00949670634920635
+    },
+    {
+      "name": "wp_node7_entropy",
+      "shap_value": 0.009442826617826618
+    },
+    {
+      "name": "wp_node8_rel_energy",
+      "shap_value": 0.009434841269841268
+    },
+    {
+      "name": "wp_node11_rel_energy",
+      "shap_value": 0.009331396011396011
+    },
+    {
+      "name": "wp_node10_entropy",
+      "shap_value": 0.009285951363451363
+    }
+  ],
+  "frequency_annotation": "Predicted: Healthy. Confidence 0.94. Dominant envelope peak at 305.0 Hz matches BPFO x3 (322.09 Hz) within 5.31%."
+}
