@@ -1,0 +1,30 @@
+seed: 42
+
+model:
+  name: turboguard_hybrid
+  n_channels: 3
+  n_classes: 5
+  lstm_hidden: 128
+  lstm_layers: 2
+  dropout: 0.4
+  seq_len: 10
+
+training:
+  optimizer: adamw
+  weight_decay: 1.0e-4
+  lr: 1.0e-3
+  lr_schedule: cosine_warmup
+  warmup_epochs: 5
+  batch_size: 32
+  epochs: 120
+  early_stopping_patience: 20
+  amp: true
+  loss:
+    fault_weight: 1.0   # alpha
+    rul_weight: 0.5     # beta
+    rul_loss: huber
+
+augmentation:
+  time_shift_pct: 0.05
+  amplitude_scale_std: 0.05
+  noise_snr_db: 30
