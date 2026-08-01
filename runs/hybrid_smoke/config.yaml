@@ -1,0 +1,33 @@
+model: turboguard_hybrid
+dataset_fault: cwru
+dataset_rul: ims
+data_config: configs\data.yaml
+n_classes: 5
+seq_len: 10
+epochs: 3
+batch_size: 4
+lr: 0.001
+weight_decay: 0.0001
+warmup_epochs: 1
+fault_weight: 1.0
+rul_weight: 0.5
+augment: true
+seed: 42
+output_dir: runs\hybrid_smoke
+data_config_resolved:
+  cwru:
+    source: synthetic
+    synthetic_dir: data/raw/cwru/synthetic
+    real_dir: data/raw/cwru
+    processed_dir: data/processed/cwru
+  ims:
+    source: synthetic
+    synthetic_dir: data/raw/ims/synthetic
+    real_dir: data/raw/ims
+    processed_dir: data/processed/ims
+  window:
+    window_seconds: 1.0
+    overlap: 0.5
+    target_sample_rate_hz: 12000
+    n_channels: 3
+    sequence_length: 10
