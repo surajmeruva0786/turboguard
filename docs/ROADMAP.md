@@ -17,7 +17,8 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–N complete (141 tests passing), Phase O next.
+2026-08-01: **all 120 steps complete**, 141 tests passing, CI green,
+tagged `v0.1.0`.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -161,7 +162,7 @@ done, what's next, and how to resume a session. Short version as of
 113. `scripts/run_full_pipeline.py` (end-to-end orchestration)
 114. Full pipeline smoke run in CI
 
-## Phase O — Final polish (115–120)
+## Phase O — Final polish (115–120) ✅ done
 115. Update README results with measured synthetic-scale numbers
 116. Update README project structure to match reality
 117. Full test suite run + coverage summary

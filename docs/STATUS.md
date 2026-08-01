@@ -1,15 +1,17 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, end of Phase N. This file is the
-single source of truth for "what's done" and "what's next" — read this
-before resuming.
+Last updated: 2026-08-01, session 2, project complete. This file is the
+single source of truth for "what's done" — read this before resuming any
+future work.
 
-## Progress: 114 / 120 roadmap steps committed (Phases A–N done, Phase O next)
+## Progress: 120 / 120 roadmap steps committed — v0.1.0 tagged
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
 log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **141
-passing, 0 failing**, verified from a **fully clean artifact state**
-(`pytest -q` from repo root with `.venv` activated).
+passing, 0 failing**, verified from a **fully clean artifact state**.
+GitHub Actions CI is **green** (`lint-and-test` on Python 3.11 + 3.12,
+`full-pipeline-smoke`) — confirmed via the Actions API, see
+`docs/RELEASE_CHECKLIST.md`.
 
 ### Done
 
@@ -127,16 +129,17 @@ passing, 0 failing**, verified from a **fully clean artifact state**
   execution — not an actual test gap, just a measurement blind spot worth
   knowing about.
 
-### Not started yet (Phase O tail)
+- **Phase O tail**: `CHANGELOG.md` added; final repo-wide `ruff check`
+  pass confirmed clean; `docs/RELEASE_CHECKLIST.md` completed and
+  `v0.1.0` tagged on the commit where CI first went fully green.
 
-Full detail in `docs/ROADMAP.md`.
+### Nothing left on the roadmap
 
-1. `CHANGELOG.md`.
-2. Repo-wide lint/format pass (already clean as of step 109 — final
-   verification only).
-3. Final release checklist + `v0.1.0` tag.
+All 120 steps are done. Future work beyond this roadmap (real dataset
+runs, order tracking, edge deployment, etc.) is listed in README section
+21 ("Future Work"), not tracked here.
 
-## How to resume
+## How to resume (for future feature work beyond v0.1.0)
 
 ```bash
 cd Z:\turboguard
@@ -144,10 +147,10 @@ source .venv/Scripts/activate   # already has all requirements.txt installed
 pytest -q                        # should show 141 passed
 ```
 
-Then continue at "Phase O" above — same pattern as every prior step:
-implement, write tests against the committed synthetic data (not mocks),
-run them, commit, push. Commit message convention: `feat(step-N/120): ...`
-(see `git log` for exact numbering so far; next commit should be step 115).
+There is no "next step" queued — this file exists for historical context
+on how the build was done and the bugs found along the way. Follow the
+same pattern for any future work: implement, write tests against real
+(committed synthetic or downloaded real) data, run them, commit, push.
 
 ## Key design decisions worth knowing before continuing
 
