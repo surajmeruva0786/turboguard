@@ -17,8 +17,7 @@ pipeline — swapping in real data requires no code changes, only pointing
 
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
-2026-08-01: Phases A–G complete (37 commits, 85 tests passing), Phase H
-in progress.
+2026-08-01: Phases A–H complete (101 tests passing), Phase I next.
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
@@ -94,7 +93,7 @@ in progress.
 59. `tests/test_evaluation_classification.py`
 60. Evaluate classical baselines, save results
 
-## Phase H — Deep models (61–72) 🚧 in progress (CNNEncoder + TurboGuardCNN done)
+## Phase H — Deep models (61–72) ✅ done
 61. `src/models/turboguard_cnn.py`
 62. `src/models/turboguard_hybrid.py`
 63. `src/models/autoencoder.py`
