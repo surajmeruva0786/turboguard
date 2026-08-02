@@ -24,7 +24,7 @@ from torch.utils.data import Dataset
 
 from src.data.cwru_loader import CWRURecord, align_channels
 from src.data.ims_loader import IMSRecord
-from src.preprocessing.conditioning import condition_signal
+from src.preprocessing.conditioning import condition_signal, resample_and_fix_length
 from src.preprocessing.windowing import window_signal
 
 FAULT_CLASSES = ["healthy", "inner_race", "outer_race", "ball", "compound"]
@@ -130,7 +130,15 @@ class SequenceRULDataset(Dataset):
     the last timestep of the sequence.
     """
 
-    def __init__(self, records: list[IMSRecord], seq_len: int = 10, stride: int = 1, n_channels: int = 3):
+    def __init__(
+        self,
+        records: list[IMSRecord],
+        seq_len: int = 10,
+        stride: int = 1,
+        n_channels: int = 3,
+        window_seconds: float | None = None,
+        target_rate: float | None = None,
+    ):
         by_bearing: dict[int, list[IMSRecord]] = {}
         for r in records:
             by_bearing.setdefault(r.bearing_id, []).append(r)
@@ -138,7 +146,15 @@ class SequenceRULDataset(Dataset):
         self.samples: list[SequenceSample] = []
         for bearing_records in by_bearing.values():
             bearing_records = sorted(bearing_records, key=lambda r: r.snapshot_index)
-            signals = [align_channels(r.signal, (), n_channels=n_channels).astype(np.float32) for r in bearing_records]
+            signals = [
+                resample_and_fix_length(
+                    align_channels(r.signal, (), n_channels=n_channels).astype(np.float32),
+                    r.sample_rate_hz,
+                    target_rate,
+                    window_seconds,
+                )
+                for r in bearing_records
+            ]
             for end in range(seq_len - 1, len(signals), stride):
                 start = end - seq_len + 1
                 seq = np.stack(signals[start : end + 1])

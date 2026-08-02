@@ -26,6 +26,7 @@ from src.data.ims_loader import IMSRecord, load_ims_dataset
 from src.evaluation.rul_metrics import rul_metrics
 from src.features.bearing_freqs import IMS_BEARING, IMS_SHAFT_FREQ_HZ
 from src.features.feature_vector import extract_feature_vector, feature_dict_to_array
+from src.preprocessing.conditioning import resample_and_fix_length
 from src.rul.combine import combine_rul_estimates, learn_combination_weight
 from src.rul.degradation_model import estimate_rul_from_trajectory
 from src.rul.direct_regression import load_direct_regression_model, predict_rul
@@ -53,10 +54,30 @@ def extract_bearing_features(records: list[IMSRecord], n_channels: int = 3) -> n
     return X
 
 
-def build_rul_sequences(records: list[IMSRecord], seq_len: int, n_channels: int = 3):
-    """Sliding windows of ``seq_len`` consecutive snapshots -> (windows, actual_rul, end_index)."""
+def build_rul_sequences(
+    records: list[IMSRecord],
+    seq_len: int,
+    n_channels: int = 3,
+    target_rate: float | None = None,
+    window_seconds: float | None = None,
+):
+    """Sliding windows of ``seq_len`` consecutive snapshots -> (windows, actual_rul, end_index).
+
+    ``target_rate``/``window_seconds`` resample and pad/truncate each snapshot
+    to match whatever fixed shape the direct-regression checkpoint was
+    trained on (needed for real IMS snapshots, which are a different native
+    rate/duration than CWRU windows; a no-op for synthetic data, which is
+    already that shape)."""
     records = sorted(records, key=lambda r: r.snapshot_index)
-    signals = [align_channels(r.signal, (), n_channels=n_channels).astype(np.float32) for r in records]
+    signals = [
+        resample_and_fix_length(
+            align_channels(r.signal, (), n_channels=n_channels).astype(np.float32),
+            r.sample_rate_hz,
+            target_rate,
+            window_seconds,
+        )
+        for r in records
+    ]
     windows, actual, end_indices = [], [], []
     for end in range(seq_len - 1, len(signals)):
         start = end - seq_len + 1
@@ -76,9 +97,18 @@ def degradation_rul_at_indices(
     return np.array(preds)
 
 
-def evaluate_bearing_pair(fit_bearing: int, test_bearing: int, ims_dir: Path, hybrid_checkpoint: Path) -> dict:
-    fit_records = load_ims_dataset(ims_dir, bearing_id=fit_bearing)
-    test_records = load_ims_dataset(ims_dir, bearing_id=test_bearing)
+def evaluate_bearing_pair(
+    fit_bearing: int,
+    test_bearing: int,
+    ims_dir: Path,
+    hybrid_checkpoint: Path,
+    source: str = "synthetic",
+    test_set: int | None = None,
+    target_rate: float | None = 12000.0,
+    window_seconds: float | None = 1.0,
+) -> dict:
+    fit_records = load_ims_dataset(ims_dir, source=source, bearing_id=fit_bearing, test_set=test_set)
+    test_records = load_ims_dataset(ims_dir, source=source, bearing_id=test_bearing, test_set=test_set)
 
     fit_records = sorted(fit_records, key=lambda r: r.snapshot_index)
     test_records = sorted(test_records, key=lambda r: r.snapshot_index)
@@ -102,8 +132,12 @@ def evaluate_bearing_pair(fit_bearing: int, test_bearing: int, ims_dir: Path, hy
     hi_preds_fit = degradation_rul_at_indices(time_fit, hi_fit, threshold, eval_indices)
 
     model = load_direct_regression_model(hybrid_checkpoint)
-    windows_fit, actual_fit, end_idx_fit = build_rul_sequences(fit_records, SEQ_LEN)
-    windows_test, actual_test, end_idx_test = build_rul_sequences(test_records, SEQ_LEN)
+    windows_fit, actual_fit, end_idx_fit = build_rul_sequences(
+        fit_records, SEQ_LEN, target_rate=target_rate, window_seconds=window_seconds
+    )
+    windows_test, actual_test, end_idx_test = build_rul_sequences(
+        test_records, SEQ_LEN, target_rate=target_rate, window_seconds=window_seconds
+    )
     assert np.array_equal(end_idx_fit, eval_indices)
     assert np.array_equal(end_idx_test, eval_indices)
 
@@ -130,12 +164,34 @@ def main() -> None:
     parser.add_argument("--hybrid_checkpoint", type=Path, default=Path("runs/hybrid_smoke/model.pt"))
     parser.add_argument("--fit_bearing", type=int, default=1)
     parser.add_argument("--test_bearing", type=int, default=2)
+    parser.add_argument(
+        "--source", choices=["synthetic", "real"], default="synthetic",
+        help="'real' expects --ims_dir to point at an extracted test-set dir (e.g. data/raw/ims/2nd_test) "
+        "and requires --test_set.",
+    )
+    parser.add_argument(
+        "--test_set", type=int, choices=[1, 2, 3], default=None,
+        help="Which real IMS test set --ims_dir holds (required when --source real).",
+    )
+    parser.add_argument("--target_rate", type=float, default=12000.0)
+    parser.add_argument("--window_seconds", type=float, default=1.0)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--output_dir", type=Path, default=Path("results/rul_ims"))
     args = parser.parse_args()
+    if args.source == "real" and args.test_set is None:
+        parser.error("--test_set is required when --source real")
 
     set_seed(args.seed)
-    results = evaluate_bearing_pair(args.fit_bearing, args.test_bearing, args.ims_dir, args.hybrid_checkpoint)
+    results = evaluate_bearing_pair(
+        args.fit_bearing,
+        args.test_bearing,
+        args.ims_dir,
+        args.hybrid_checkpoint,
+        source=args.source,
+        test_set=args.test_set,
+        target_rate=args.target_rate,
+        window_seconds=args.window_seconds,
+    )
     logger.info(
         "RUL eval (bearing %d -> %d): HI RMSE=%.2f, Direct RMSE=%.2f, Combined RMSE=%.2f",
         args.fit_bearing,
@@ -147,17 +203,32 @@ def main() -> None:
 
     output_dir = ensure_dir(args.output_dir)
     save_json(results, output_dir / "metrics.json")
+    note = (
+        "Evaluated on the tiny 2-bearing synthetic IMS set; direct-regression "
+        "checkpoint was smoke-trained on this same data (not held out) — this is "
+        "a pipeline-correctness check, not a benchmark claim."
+        if args.source == "synthetic"
+        else (
+            "Evaluated on a real NASA IMS run-to-failure test set. rul_cycles is a "
+            "snapshot-count-until-last-file proxy, not a calibrated time-to-failure "
+            "(no per-row timestamp reliability — see src/data/ims_loader.py). "
+            "direct_regression_only requires --hybrid_checkpoint to have been trained "
+            "on this same real data (see configs/data_real.yaml) to be meaningful."
+        )
+    )
     save_yaml(
         {
-            "note": (
-                "Evaluated on the tiny 2-bearing synthetic IMS set; direct-regression "
-                "checkpoint was smoke-trained on this same data (not held out) — this is "
-                "a pipeline-correctness check, not a benchmark claim."
-            ),
+            "note": note,
+            "source": args.source,
+            "test_set": args.test_set,
+            "ims_dir": str(args.ims_dir),
+            "hybrid_checkpoint": str(args.hybrid_checkpoint),
             "fit_bearing": args.fit_bearing,
             "test_bearing": args.test_bearing,
             "seq_len": SEQ_LEN,
             "n_healthy_snapshots": N_HEALTHY_SNAPSHOTS,
+            "target_rate": args.target_rate,
+            "window_seconds": args.window_seconds,
         },
         output_dir / "config.yaml",
     )

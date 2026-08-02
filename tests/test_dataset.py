@@ -55,6 +55,21 @@ def test_sequence_rul_dataset_targets_decrease_along_trajectory():
     assert targets[-1] == 0.0
 
 
+def test_sequence_rul_dataset_resamples_and_fixes_length_to_match_cwru():
+    """Real IMS snapshots (e.g. 20 kHz / 1.024 s) must come out the same
+    (n_channels, window_samples) shape as CWRU windows once target_rate /
+    window_seconds are given, so a hybrid-model batch can stack both."""
+    records = load_ims_dataset(IMS_DIR, source="synthetic", bearing_id=1)
+    ds = SequenceRULDataset(records, seq_len=5, window_seconds=1.0, target_rate=12000)
+    assert ds[0].windows.shape == (5, 3, 12000)
+
+    for r in records:
+        r.sample_rate_hz = 20000.0
+        r.signal = r.signal[:, :20480] if r.signal.shape[1] >= 20480 else r.signal
+    ds_resampled = SequenceRULDataset(records, seq_len=5, window_seconds=1.0, target_rate=12000)
+    assert ds_resampled[0].windows.shape == (5, 3, 12000)
+
+
 def test_collate_sequence_samples_masks_absent_labels():
     fault_records = load_cwru_dataset(CWRU_DIR, source="synthetic")
     rul_records = load_ims_dataset(IMS_DIR, source="synthetic", bearing_id=1)

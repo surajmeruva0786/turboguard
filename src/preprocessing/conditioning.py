@@ -52,3 +52,22 @@ def condition_signal(
         signal = antialias_lowpass(signal, orig_rate, antialias_cutoff_hz)
     signal = resample_signal(signal, orig_rate, target_rate)
     return signal
+
+
+def resample_and_fix_length(
+    signal: np.ndarray, sample_rate: float, target_rate: float | None, window_seconds: float | None
+) -> np.ndarray:
+    """Resample to ``target_rate`` (if given) then pad/truncate to exactly
+    ``window_seconds`` long. Lets recordings taken at a different native rate
+    or duration (e.g. real IMS's 20 kHz/1.024 s snapshots vs CWRU's 12 kHz/1 s
+    windows) come out as the same fixed shape a downstream fixed-input model
+    expects. No-op when both are ``None``."""
+    if target_rate and target_rate != sample_rate:
+        signal = condition_signal(signal, sample_rate, target_rate)
+        sample_rate = target_rate
+    if not window_seconds:
+        return signal
+    n = int(round(window_seconds * sample_rate))
+    if signal.shape[-1] >= n:
+        return signal[:, :n]
+    return np.pad(signal, ((0, 0), (0, n - signal.shape[-1])))

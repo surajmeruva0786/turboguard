@@ -63,6 +63,7 @@ def build_cnn_dataset(data_cfg: dict, dataset: str) -> FaultWindowDataset:
         records,
         window_seconds=window_cfg["window_seconds"],
         overlap=window_cfg["overlap"],
+        target_rate=window_cfg.get("target_sample_rate_hz"),
         n_channels=window_cfg["n_channels"],
     )
 
@@ -77,12 +78,19 @@ def build_multitask_dataset(data_cfg: dict, dataset_fault: str, dataset_rul: str
         seq_len=seq_len,
         window_seconds=window_cfg["window_seconds"],
         overlap=window_cfg["overlap"],
+        target_rate=window_cfg.get("target_sample_rate_hz"),
         n_channels=window_cfg["n_channels"],
     )
     rul_records = load_ims_dataset(
         _resolve_dir(data_cfg, dataset_rul), source=data_cfg[dataset_rul]["source"]
     )
-    rul_ds = SequenceRULDataset(rul_records, seq_len=seq_len, n_channels=window_cfg["n_channels"])
+    rul_ds = SequenceRULDataset(
+        rul_records,
+        seq_len=seq_len,
+        n_channels=window_cfg["n_channels"],
+        window_seconds=window_cfg["window_seconds"],
+        target_rate=window_cfg.get("target_sample_rate_hz"),
+    )
     return ConcatDataset([fault_ds, rul_ds])
 
 

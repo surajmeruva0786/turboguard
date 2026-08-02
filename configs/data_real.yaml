@@ -1,0 +1,25 @@
+# Real-data variant of configs/data.yaml (roadmap: post-v0.1.0 real-dataset
+# run). Points both datasets at their real, downloaded directories instead
+# of the committed synthetic stand-ins. Requires:
+#   python scripts/download_cwru.py --output_dir data/raw/cwru
+#   python scripts/download_ims.py --output_dir data/raw/ims
+# configs/data.yaml (synthetic) is left untouched — CI and the default
+# dashboard demo still run against synthetic data.
+cwru:
+  source: real
+  synthetic_dir: data/raw/cwru/synthetic
+  real_dir: data/raw/cwru
+  processed_dir: data/processed/cwru_real
+
+ims:
+  source: real
+  synthetic_dir: data/raw/ims/synthetic
+  real_dir: data/raw/ims
+  processed_dir: data/processed/ims_real
+
+window:
+  window_seconds: 1.0
+  overlap: 0.5
+  target_sample_rate_hz: 12000
+  n_channels: 3
+  sequence_length: 10
