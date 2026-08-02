@@ -670,7 +670,7 @@ TurboGuard/
 
 ## 18. Results
 
-> **These are real measured numbers from this repo's committed synthetic dataset** (`data/raw/{cwru,ims}/synthetic/`, `make train-classical`, `src.evaluation.*`) — not literature benchmarks. The synthetic CWRU set is tiny and cleanly separable by design (4 loads × 5 classes, one window per condition), so within-condition and cross-condition accuracy hitting 1.000 is an **expected pipeline-correctness result, not a claim of real-world performance**. Cross-dataset and RUL numbers are more representative of genuine difficulty, since they involve real domain shift and real IMS run-to-failure trajectories. Swapping in the real CWRU/IMS datasets (`configs/data.yaml`: `source: real`) requires no code changes and would produce literature-comparable numbers instead — see `docs/ROADMAP.md`'s data note and `docs/STATUS.md` for the full caveats behind each result below.
+> **These are real measured numbers from this repo's committed synthetic dataset** (`data/raw/{cwru,ims}/synthetic/`, `make train-classical`, `src.evaluation.*`) — not literature benchmarks. The synthetic CWRU set is tiny and cleanly separable by design (4 loads × 5 classes, one window per condition), so within-condition and cross-condition accuracy hitting 1.000 is an **expected pipeline-correctness result, not a claim of real-world performance**. Cross-dataset and RUL numbers are more representative of genuine difficulty, since they involve real domain shift and real IMS run-to-failure trajectories. The real CWRU/IMS datasets have since been downloaded and run end-to-end — see **[Real-Data Results](#real-data-results-cwru--ims)** below for the literature-comparable numbers this section used to promise "would produce."
 
 ### Fault Classification on CWRU (within-condition, 4-fold CV, synthetic data)
 
@@ -731,6 +731,100 @@ is astronomically large because true RUL passes through 0 at failure
 `docs/STATUS.md` for the full caveat: the direct-regression checkpoint was
 smoke-trained on this same synthetic data (not a genuinely held-out
 model), so this is a pipeline-correctness check, not a benchmark claim.
+
+### Real-Data Results (CWRU + IMS)
+
+> Downloaded via `scripts/download_cwru.py`/`scripts/download_ims.py`
+> (real files are large and license-gated, so not committed to the repo —
+> see `data/README.md`), pointed at by `configs/data_real.yaml`, and run
+> through the exact same CLIs as the synthetic results above — no
+> pipeline code differs between synthetic and real, only which config/
+> `--source real` flag is passed. Getting this working end-to-end
+> surfaced and fixed four real bugs, documented in `CHANGELOG.md`
+> (mixed 12 kHz/48 kHz CWRU files not being resampled to a common rate
+> before batching; the same for real IMS's 20 kHz snapshots; a dtype
+> upcast that broke mixed-batch training; and RUL metrics that went
+> silently NaN instead of reporting partial results).
+
+**Fault classification, real CWRU (all 161 files: 4 loads × 4 health
+states × 3 fault diameters, 4-fold CV, Random Forest)**
+
+| Metric   | Value |
+|----------|-------|
+| Accuracy | 0.999 |
+| Macro-F1 | 0.799 |
+
+*(source: `runs/random_forest_cwru_real/metrics.json`)* Every real class
+CWRU actually has scores F1 = 0.999–1.000; macro-F1 is deflated by
+`FAULT_CLASSES` including a 5th "compound" class that CWRU never labels
+(0 support, 0 F1, still counted in the unweighted average) — a taxonomy
+artifact, not a modelling weakness. TurboGuard-CNN was also trained on
+this same real data for 40 epochs, reaching a final training loss of
+0.0002 (`runs/cnn_real/metrics.json`).
+
+**Cross-condition (train real loads 0,1,2 → test real load 3, Random Forest)**
+
+| Metric   | Value |
+|----------|-------|
+| Accuracy | 0.968 |
+| Macro-F1 | 0.779 |
+
+*(source: `results/cross_condition_real/metrics.json`)* Unlike the
+synthetic set's 1.000, this is a **genuine, non-trivial generalisation
+result** — most residual errors are outer-race ↔ ball confusion at the
+held-out load (see the confusion matrix in the metrics file).
+
+**Cross-dataset (train real CWRU → test real IMS 2nd_test, Random Forest)**
+
+| Metric   | Value |
+|----------|-------|
+| Accuracy | 0.032 |
+| Macro-F1 | 0.045 |
+
+*(source: `results/cross_dataset_real/metrics.json`)* Confirms the same
+severe domain-shift finding already measured on synthetic data (0.025) —
+now on two genuinely different pieces of hardware, sensors, and fault
+physics. IMS's real per-bearing fault labels (`dominant_fault`) come from
+the dataset's own bundled Readme, not a guess: `src/data/ims_loader.py`'s
+`IMS_REAL_FAULT_LABELS` records exactly which bearing failed which way in
+each of the three real test sets.
+
+**RUL estimation, real IMS 2nd_test (fit bearing 2 [healthy the whole
+test] → test bearing 1 [documented outer-race failure], using the
+`hybrid_real` checkpoint trained above)**
+
+| Method                     | RMSE (snapshots) | Valid / Total |
+|-----------------------------|------------------|----------------|
+| Health Indicator only        | 4739.14          | 770 / 975      |
+| Direct regression             | **107.59**       | 975 / 975      |
+| **Combined (TurboGuard)**    | **107.15**       | 770 / 975      |
+
+*(source: `results/rul_ims_real/metrics.json`)* RUL here is a
+snapshot-count-until-last-file proxy (see `src/data/ims_loader.py`), on a
+~1000-snapshot scale — direct regression's ~108-snapshot RMSE is a real,
+meaningful result from a model actually trained on this real data
+(`runs/hybrid_real`). The health-indicator RMSE is a genuine **negative
+finding**, not noise: calibrating the autoencoder on only 5 real healthy
+snapshots (same `N_HEALTHY_SNAPSHOTS` as the synthetic run) saturates it
+against the noisier real failing-bearing signal almost immediately, so
+205/975 windows aren't even extrapolable (the degradation model correctly
+declines rather than guessing — see `src/evaluation/rul_metrics.py`'s
+`n_dropped_nonfinite`). The ensemble correctly learned
+`weight_direct = 1.0`, fully discounting the broken HI signal — the same
+adaptive behaviour as the synthetic run, now demonstrated doing something
+non-trivial with a genuinely bad input.
+
+**Explainability**: `results/xai/sample_276_real_inner_race/
+explanation.json` — SHAP's top attribution for a real inner-race-fault
+sample is `z_env_BPFI_h1_amp` (envelope-spectrum amplitude at the
+inner-race fault frequency's 1st harmonic). That's the physically correct
+signature for this fault mode, not a coincidence.
+
+**Reproduce**: `python scripts/download_cwru.py --output_dir data/raw/cwru`,
+`python scripts/download_ims.py --output_dir data/raw/ims`, then rerun the
+section 16 commands with `--source real --processed_dir data/processed/
+cwru_real` (CWRU) or against `configs/data_real.yaml` (deep models) — see
+`docs/STATUS.md` for the exact command history.
 
 ---
 

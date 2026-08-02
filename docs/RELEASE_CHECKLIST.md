@@ -33,10 +33,9 @@ Final verification before tagging `v0.1.0` (roadmap step 120,
       the bugs found/fixed along the way.
 - [x] `docs/DEPLOYMENT.md` covers local, Docker, docker-compose, and
       cloud-deployment paths.
-- [ ] Real CWRU/IMS datasets downloaded and the full pipeline rerun
-      against them for literature-comparable numbers — explicitly out of
-      scope for this release (large, license-gated downloads; see
-      `data/README.md`); tracked as future work (README section 21).
+- [x] Real CWRU/IMS datasets downloaded and the full pipeline rerun
+      against them for literature-comparable numbers — done in the
+      `v0.2.0` addendum below (was explicitly out of scope for `v0.1.0`).
 
 ## Known local-environment note (not a repo issue)
 
@@ -45,3 +44,28 @@ part of this session, which made Docker Desktop intermittently
 unresponsive. The Docker image itself built and ran successfully before
 that; this is flagged for the user's awareness, not something addressed
 in this repo.
+
+---
+
+## v0.2.0 addendum (2026-08-02): real-data run
+
+- [x] Real CWRU dataset downloaded (161 `.mat` files, all 4 categories)
+      via `scripts/download_cwru.py`, with retry logic added after two
+      transient `ChunkedEncodingError`s from the source server.
+- [x] Real NASA IMS dataset downloaded and fully extracted (3 test sets)
+      via `scripts/download_ims.py`, after fixing it to handle the
+      undocumented zip → `.7z` → `.rar` × 3 nested archive structure.
+- [x] Full pipeline (preprocessing → features → classical training →
+      cross-condition/cross-dataset evaluation → deep-model training →
+      RUL evaluation → XAI) run against both real datasets — see README
+      section 18 "Real-Data Results" for numbers, `docs/STATUS.md`
+      session 3 for the full account.
+- [x] Full test suite passes: `pytest -q` → 144 passed, 0 failed (141 at
+      `v0.1.0` + 3 new tests covering this session's fixes).
+- [x] `ruff check src tests app scripts` — all checks pass, repo-wide.
+- [x] `CHANGELOG.md` [0.2.0] added.
+- [ ] `1st_test`/`3rd_test` real IMS RUL evaluation, and a real cross-
+      dataset run using more than one real IMS test set — real IMS work
+      this session scoped to `2nd_test` only (smallest, most tractable on
+      CPU-only hardware); both remaining test sets are already downloaded
+      and usable with `--test_set {1,3}`. Tracked as future work.

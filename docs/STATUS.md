@@ -1,10 +1,15 @@
 # Session Status — where this build stands
 
-Last updated: 2026-08-01, session 2, project complete. This file is the
-single source of truth for "what's done" — read this before resuming any
-future work.
+Last updated: 2026-08-02, session 3 (post-v0.1.0 real-data run). This file
+is the single source of truth for "what's done" — read this before
+resuming any future work.
 
-## Progress: 120 / 120 roadmap steps committed — v0.1.0 tagged
+## Progress: 120 / 120 roadmap steps committed — v0.1.0 tagged; real-data run complete — v0.2.0
+
+Session 3 downloaded the real CWRU + NASA IMS datasets and ran the full
+pipeline against them (README section 18 "Real-Data Results",
+`CHANGELOG.md` [0.2.0]) — see "Session 3" below for the detailed account.
+The rest of this file (sessions 1-2) is unchanged history.
 
 All commits are on `main`, pushed to GitHub, one step at a time (see `git
 log` or `docs/ROADMAP.md` for the full numbered list). Test suite: **141
@@ -137,14 +142,81 @@ GitHub Actions CI is **green** (`lint-and-test` on Python 3.11 + 3.12,
 
 All 120 steps are done. Future work beyond this roadmap (real dataset
 runs, order tracking, edge deployment, etc.) is listed in README section
-21 ("Future Work"), not tracked here.
+21 ("Future Work"), not tracked here. (Update, session 3: the real
+dataset run item is now done — see below.)
 
-## How to resume (for future feature work beyond v0.1.0)
+## Session 3 (2026-08-02): real CWRU + IMS dataset run
+
+Downloaded both real datasets and ran the full pipeline against them.
+Full numbers: README section 18 "Real-Data Results". Full bug list:
+`CHANGELOG.md` [0.2.0]. Summary of what happened, in order:
+
+1. **Downloads weren't as documented.** `scripts/download_cwru.py`
+   (161 real `.mat` files) hit `requests.exceptions.ChunkedEncodingError`
+   twice mid-run — the CWRU server intermittently truncates responses
+   under sustained sequential download. Added retry-with-backoff +
+   Content-Length verification (a prior run's partial file was being
+   silently treated as complete). `scripts/download_ims.py`'s single
+   "~1GB zip" turned out to be zip → nested `IMS.7z` → three `.rar`
+   files, one of which (`3rd_test.rar`) internally unpacks to a
+   stale-named `4th_test/txt/` folder instead of `3rd_test/`. Added
+   `py7zr` + WinRAR/`unrar` shellout + folder normalization to handle
+   all three layers automatically.
+2. **Read the dataset's own bundled Readme PDF** ("Readme Document for
+   IMS Bearing Data.pdf", inside the IMS archive) for authoritative
+   per-bearing fault ground truth, since the loader previously hardcoded
+   `dominant_fault="unknown"` for all real IMS data: Set 1 bearing 3 =
+   inner race, bearing 4 = ball; Set 2 bearing 1 = outer race; Set 3
+   bearing 3 = outer race. Recorded in `IMS_REAL_FAULT_LABELS`
+   (`src/data/ims_loader.py`). Without this, cross-dataset evaluation
+   against real IMS would have been meaningless (single unlabelled
+   class).
+3. **Real data broke two assumptions the synthetic set made true by
+   construction.** (a) `configs/data.yaml`'s `window.target_sample_rate_hz`
+   was defined but never actually wired to the dataset classes — real
+   CWRU mixes 12kHz and 48kHz files, real IMS is 20kHz, so batching them
+   against CWRU's 12kHz windows crashed. Added and wired
+   `resample_and_fix_length()` (`src/preprocessing/conditioning.py`).
+   (b) That function's resampling upcast to float64 (scipy internals),
+   which broke mixed-dtype batches at the model's float32 conv layer —
+   fixed by preserving input dtype explicitly.
+4. **RUL metrics went silently NaN on real data.** Fitting the
+   health-indicator autoencoder on only 5 real (noisier, larger-scale)
+   healthy snapshots saturates it almost immediately against the real
+   failing bearing, so `src.rul.degradation_model` correctly declines to
+   extrapolate on 205/975 windows (returns NaN rather than guessing) —
+   but `rul_metrics()` had no NaN handling, so one NaN prediction turned
+   every aggregate metric NaN, silently hiding the other 770 valid ones.
+   Fixed to compute over finite predictions only, reporting
+   `n_valid`/`n_dropped_nonfinite`. This is a genuine negative result
+   (see README), not a bug being smoothed over — the direct-regression
+   RUL model (trained on this same real data, `runs/hybrid_real`) does
+   work, RMSE 107.6 on a ~1000-snapshot scale.
+5. **Ran the full pipeline on real data**: classical CV (0.999 acc,
+   `runs/random_forest_cwru_real`), cross-condition (0.968 acc,
+   `results/cross_condition_real`), cross-dataset (0.032 acc, confirming
+   the synthetic run's 0.025 domain-shift finding on real hardware,
+   `results/cross_dataset_real`), CNN (40 epochs, `runs/cnn_real`),
+   Hybrid (20 epochs, `runs/hybrid_real`), RUL (`results/rul_ims_real`),
+   XAI (`results/xai/sample_276_real_inner_race` — top SHAP feature is
+   `z_env_BPFI_h1_amp`, physically correct for an inner-race fault).
+6. **Scoping decision**: real IMS work used `2nd_test` only (984
+   snapshots × 4 bearings, one documented failure) rather than all three
+   test sets — smallest, most tractable on CPU-only hardware, and
+   `1st_test`/`3rd_test` remain downloaded and usable with the same
+   `--test_set {1,3}` flags for anyone who wants to extend this.
+
+Full test suite (144 tests, up from 141 — 3 new tests covering the
+above fixes) and `ruff check` both clean after every change; see git log
+for the exact commit-by-commit sequence (each fix/feature/result batch is
+its own commit, pattern unchanged from sessions 1-2).
+
+## How to resume (for future feature work beyond v0.1.0/v0.2.0)
 
 ```bash
 cd Z:\turboguard
 source .venv/Scripts/activate   # already has all requirements.txt installed
-pytest -q                        # should show 141 passed
+pytest -q                        # should show 144 passed
 ```
 
 There is no "next step" queued — this file exists for historical context
@@ -154,14 +226,19 @@ same pattern for any future work: implement, write tests against real
 
 ## Key design decisions worth knowing before continuing
 
-- **Synthetic vs real data**: everything runs against a small physics-based
-  synthetic dataset committed to the repo (see `data/README.md`). Real
-  CWRU/IMS downloaders are real and verified but not run — swapping in real
-  data later needs zero code changes, only `source: real` in
-  `configs/data.yaml` / `--source real` on the CLIs.
+- **Synthetic vs real data**: CI, tests, and the default dashboard demo
+  still run against the small physics-based synthetic dataset committed to
+  the repo (see `data/README.md`). The real CWRU/IMS datasets have since
+  been downloaded and run end-to-end (session 3, below;
+  `configs/data_real.yaml`, `--source real` on the CLIs) — real data itself
+  is gitignored (large, license-gated) so it isn't in the repo, only the
+  resulting `results/*_real`/`runs/*_real` metrics are.
 - **Window shape must match across CWRU and IMS**: both are 1s @ 12kHz
   (12000 samples) so the hybrid model's shared encoder can batch sequences
-  from either dataset together.
+  from either dataset together. Enforced by
+  `src.preprocessing.conditioning.resample_and_fix_length` (added in
+  session 3) rather than just true-by-construction of the synthetic
+  generator — real CWRU has mixed 12/48kHz files and real IMS is 20kHz.
 - **gitignore gotcha**: to keep small files (`metrics.json`, `config.yaml`)
   inside an otherwise-ignored directory (`runs/*`), the directory itself
   must also be un-ignored (`!runs/*/`).

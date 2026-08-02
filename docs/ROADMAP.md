@@ -18,7 +18,10 @@ pipeline — swapping in real data requires no code changes, only pointing
 **Live progress**: see [`docs/STATUS.md`](STATUS.md) for exactly what's
 done, what's next, and how to resume a session. Short version as of
 2026-08-01: **all 120 steps complete**, 141 tests passing, CI green,
-tagged `v0.1.0`.
+tagged `v0.1.0`. Update, 2026-08-02: the real CWRU/IMS dataset run
+mentioned throughout this doc as a data-note/config-swap has been done —
+144 tests passing, tagged `v0.2.0` — see `docs/STATUS.md` session 3 and
+README section 18 "Real-Data Results".
 
 ## Phase A — Project scaffolding (1–10) ✅ done
 1. `.gitignore`
