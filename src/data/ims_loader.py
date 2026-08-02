@@ -21,6 +21,20 @@ IMS_TEST_SET_LAYOUT = {
     3: {"n_bearings": 4, "channels_per_bearing": 1},
 }
 
+# Ground truth from the dataset's own bundled "Readme Document for IMS
+# Bearing Data.pdf" (Qiu et al. 2006): the one bearing per test that was
+# diagnosed with a specific fault at teardown, and what kind. Bearings not
+# listed here ran the full test-to-failure experiment without a diagnosed
+# fault, so they're labelled "healthy" — a trajectory-level label (like the
+# synthetic IMS set's single dominant_fault per bearing), not a claim that
+# every individual snapshot is healthy.
+IMS_REAL_FAULT_LABELS: dict[tuple[int, int], str] = {
+    (1, 3): "inner_race",
+    (1, 4): "ball",
+    (2, 1): "outer_race",
+    (3, 3): "outer_race",
+}
+
 
 @dataclass
 class IMSRecord:
@@ -85,6 +99,7 @@ def load_ims_real_test_set(test_dir: str | Path, test_set: int, bearing_id: int)
 
     files = sorted(p for p in test_dir.iterdir() if p.is_file())
     n_total = len(files)
+    dominant_fault = IMS_REAL_FAULT_LABELS.get((test_set, bearing_id), "healthy")
     records = []
     for idx, path in enumerate(files):
         arr = np.loadtxt(path, delimiter="\t")
@@ -99,7 +114,7 @@ def load_ims_real_test_set(test_dir: str | Path, test_set: int, bearing_id: int)
                 rul_cycles=n_total - 1 - idx,
                 health_indicator=float("nan"),
                 sample_rate_hz=20000.0,
-                dominant_fault="unknown",
+                dominant_fault=dominant_fault,
                 source_file=_parse_snapshot_timestamp(path.name),
             )
         )

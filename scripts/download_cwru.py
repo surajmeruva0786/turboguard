@@ -91,19 +91,50 @@ def build_manifest(categories: list[str]) -> pd.DataFrame:
     return df
 
 
-def download_file(url: str, dest: Path, chunk_size: int = 1 << 16) -> None:
+def download_file(url: str, dest: Path, chunk_size: int = 1 << 16, max_retries: int = 5) -> None:
+    """Download ``url`` to ``dest``, retrying on transient connection drops
+    (this server intermittently truncates responses mid-stream — observed
+    repeatedly downloading the full 161-file set). A file is only considered
+    "already downloaded" if its size matches the server's Content-Length, so
+    a previous run's partial/truncated file gets retried rather than
+    silently treated as complete.
+    """
+    expected_size = None
+    try:
+        head = requests.head(url, timeout=30, allow_redirects=True)
+        if "content-length" in head.headers:
+            expected_size = int(head.headers["content-length"])
+    except requests.RequestException:
+        pass  # fall back to GET's own content-length check below
+
     if dest.exists() and dest.stat().st_size > 0:
-        logger.info("Already downloaded, skipping: %s", dest.name)
-        return
-    with requests.get(url, stream=True, timeout=60) as resp:
-        resp.raise_for_status()
-        total = int(resp.headers.get("content-length", 0))
-        with open(dest, "wb") as f, tqdm(
-            total=total, unit="B", unit_scale=True, desc=dest.name, leave=False
-        ) as bar:
-            for chunk in resp.iter_content(chunk_size=chunk_size):
-                f.write(chunk)
-                bar.update(len(chunk))
+        if expected_size is None or dest.stat().st_size == expected_size:
+            logger.info("Already downloaded, skipping: %s", dest.name)
+            return
+        logger.warning(
+            "%s is incomplete (%d/%d bytes), re-downloading", dest.name, dest.stat().st_size, expected_size
+        )
+
+    last_error: Exception | None = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            with requests.get(url, stream=True, timeout=60) as resp:
+                resp.raise_for_status()
+                total = int(resp.headers.get("content-length", 0))
+                with open(dest, "wb") as f, tqdm(
+                    total=total, unit="B", unit_scale=True, desc=dest.name, leave=False
+                ) as bar:
+                    for chunk in resp.iter_content(chunk_size=chunk_size):
+                        f.write(chunk)
+                        bar.update(len(chunk))
+            if total and dest.stat().st_size != total:
+                raise OSError(f"Incomplete download: got {dest.stat().st_size}/{total} bytes")
+            return
+        except (requests.RequestException, OSError) as exc:
+            last_error = exc
+            logger.warning("Download attempt %d/%d failed for %s: %s", attempt, max_retries, dest.name, exc)
+            time.sleep(min(2**attempt, 30))
+    raise RuntimeError(f"Failed to download {url} after {max_retries} attempts") from last_error
 
 
 def main() -> None:
