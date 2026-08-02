@@ -61,13 +61,21 @@ def resample_and_fix_length(
     ``window_seconds`` long. Lets recordings taken at a different native rate
     or duration (e.g. real IMS's 20 kHz/1.024 s snapshots vs CWRU's 12 kHz/1 s
     windows) come out as the same fixed shape a downstream fixed-input model
-    expects. No-op when both are ``None``."""
+    expects. No-op when both are ``None``.
+
+    Output dtype always matches the input's (scipy's resample_poly/sosfiltfilt
+    upcast to float64 internally; without this, only the *resampled* signals
+    in a batch would come back float64 while untouched ones stay float32,
+    and stacking a mixed-dtype batch silently produces a float64 tensor that
+    then fails at the model's float32 conv layer)."""
+    dtype = signal.dtype
     if target_rate and target_rate != sample_rate:
         signal = condition_signal(signal, sample_rate, target_rate)
         sample_rate = target_rate
-    if not window_seconds:
-        return signal
-    n = int(round(window_seconds * sample_rate))
-    if signal.shape[-1] >= n:
-        return signal[:, :n]
-    return np.pad(signal, ((0, 0), (0, n - signal.shape[-1])))
+    if window_seconds:
+        n = int(round(window_seconds * sample_rate))
+        if signal.shape[-1] >= n:
+            signal = signal[:, :n]
+        else:
+            signal = np.pad(signal, ((0, 0), (0, n - signal.shape[-1])))
+    return signal.astype(dtype, copy=False)

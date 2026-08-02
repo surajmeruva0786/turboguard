@@ -42,5 +42,29 @@ def test_rul_metrics_returns_all_keys():
     y_true = np.array([10.0, 5.0, 0.0])
     y_pred = np.array([12.0, 4.0, 1.0])
     result = rul_metrics(y_true, y_pred)
-    assert set(result.keys()) == {"rmse", "mape", "phm_score", "n_samples"}
+    assert set(result.keys()) == {"rmse", "mape", "phm_score", "n_samples", "n_valid", "n_dropped_nonfinite"}
     assert result["n_samples"] == 3
+    assert result["n_valid"] == 3
+    assert result["n_dropped_nonfinite"] == 0
+
+
+def test_rul_metrics_drops_nonfinite_predictions_instead_of_poisoning_the_aggregate():
+    """A single NaN/inf prediction (e.g. the degradation model correctly
+    declining to extrapolate a non-increasing trajectory) must not turn
+    every aggregate metric NaN and hide the otherwise-valid predictions."""
+    y_true = np.array([10.0, 5.0, 0.0, 2.0])
+    y_pred = np.array([12.0, np.nan, 1.0, np.inf])
+    result = rul_metrics(y_true, y_pred)
+    assert result["n_samples"] == 4
+    assert result["n_valid"] == 2
+    assert result["n_dropped_nonfinite"] == 2
+    assert np.isfinite(result["rmse"])
+    assert result["rmse"] == rmse(np.array([10.0, 0.0]), np.array([12.0, 1.0]))
+
+
+def test_rul_metrics_all_nonfinite_returns_nan_not_error():
+    y_true = np.array([10.0, 5.0])
+    y_pred = np.array([np.nan, np.nan])
+    result = rul_metrics(y_true, y_pred)
+    assert result["n_valid"] == 0
+    assert np.isnan(result["rmse"])
