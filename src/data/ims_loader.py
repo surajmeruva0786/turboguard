@@ -125,5 +125,16 @@ def load_ims_dataset(input_dir: str | Path, source: str = "synthetic", **kwargs)
     if source == "synthetic":
         return load_ims_synthetic_dataset(input_dir, bearing_id=kwargs.get("bearing_id"))
     if source == "real":
-        return load_ims_real_test_set(input_dir, kwargs["test_set"], kwargs["bearing_id"])
+        test_set = kwargs["test_set"]
+        bearing_id = kwargs.get("bearing_id")
+        if bearing_id is not None:
+            return load_ims_real_test_set(input_dir, test_set, bearing_id)
+        # No bearing_id -> load every bearing in this test set (e.g. for
+        # preprocessing/training paths that need the whole directory, not
+        # one bearing's trajectory).
+        n_bearings = IMS_TEST_SET_LAYOUT[test_set]["n_bearings"]
+        records = []
+        for b in range(1, n_bearings + 1):
+            records.extend(load_ims_real_test_set(input_dir, test_set, b))
+        return records
     raise ValueError(f"Unknown source: {source!r} (expected 'synthetic' or 'real')")

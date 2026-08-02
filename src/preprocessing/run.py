@@ -71,9 +71,16 @@ def process_cwru(
 
 
 def process_ims(
-    input_dir: Path, output_dir: Path, source: str, sfreq: float, window_s: float, overlap: float, n_channels: int
+    input_dir: Path,
+    output_dir: Path,
+    source: str,
+    sfreq: float,
+    window_s: float,
+    overlap: float,
+    n_channels: int,
+    test_set: int | None = None,
 ) -> None:
-    records = load_ims_dataset(_resolve_input_dir(input_dir, "ims", source), source=source)
+    records = load_ims_dataset(_resolve_input_dir(input_dir, "ims", source), source=source, test_set=test_set)
     all_windows, meta_rows = [], []
     for r in records:
         signal = r.signal
@@ -116,12 +123,19 @@ def main() -> None:
     parser.add_argument("--window", type=float, default=1.0)
     parser.add_argument("--overlap", type=float, default=0.5)
     parser.add_argument("--n_channels", type=int, default=3)
+    parser.add_argument(
+        "--test_set", type=int, choices=[1, 2, 3], default=None,
+        help="Which real IMS test set --input_dir holds (required for --dataset ims --source real).",
+    )
     args = parser.parse_args()
 
     if args.dataset == "cwru":
         process_cwru(args.input_dir, args.output_dir, args.source, args.sfreq, args.window, args.overlap, args.n_channels)
     else:
-        process_ims(args.input_dir, args.output_dir, args.source, args.sfreq, args.window, args.overlap, args.n_channels)
+        process_ims(
+            args.input_dir, args.output_dir, args.source, args.sfreq, args.window, args.overlap,
+            args.n_channels, test_set=args.test_set,
+        )
 
 
 if __name__ == "__main__":

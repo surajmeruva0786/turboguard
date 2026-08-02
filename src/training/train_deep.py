@@ -82,7 +82,9 @@ def build_multitask_dataset(data_cfg: dict, dataset_fault: str, dataset_rul: str
         n_channels=window_cfg["n_channels"],
     )
     rul_records = load_ims_dataset(
-        _resolve_dir(data_cfg, dataset_rul), source=data_cfg[dataset_rul]["source"]
+        _resolve_dir(data_cfg, dataset_rul),
+        source=data_cfg[dataset_rul]["source"],
+        test_set=data_cfg[dataset_rul].get("test_set"),
     )
     rul_ds = SequenceRULDataset(
         rul_records,

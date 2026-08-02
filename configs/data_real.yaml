@@ -11,10 +11,18 @@ cwru:
   real_dir: data/raw/cwru
   processed_dir: data/processed/cwru_real
 
+# Real IMS is 3 separate run-to-failure experiments (1st_test/2nd_test/
+# 3rd_test), not one pool like CWRU's per-condition files. 2nd_test is used
+# here: smallest (984 snapshots x 4 bearings), and its one diagnosed fault
+# (bearing 1, outer race - see src/data/ims_loader.py IMS_REAL_FAULT_LABELS,
+# sourced from the dataset's own bundled Readme) is a well-documented case
+# in the literature. real_dir must point directly at the extracted test-set
+# directory; test_set tells the loader how to interpret its column layout.
 ims:
   source: real
   synthetic_dir: data/raw/ims/synthetic
-  real_dir: data/raw/ims
+  real_dir: data/raw/ims/2nd_test
+  test_set: 2
   processed_dir: data/processed/ims_real
 
 window:
