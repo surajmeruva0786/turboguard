@@ -1,0 +1,9 @@
+model: random_forest
+dataset: cwru
+train_loads:
+- 0
+- 1
+- 2
+test_load: 3
+seed: 42
+n_features: 176

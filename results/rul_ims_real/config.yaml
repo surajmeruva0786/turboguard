@@ -1,0 +1,15 @@
+note: "Evaluated on a real NASA IMS run-to-failure test set. rul_cycles is a snapshot-count-until-last-file\
+  \ proxy, not a calibrated time-to-failure (no per-row timestamp reliability \u2014\
+  \ see src/data/ims_loader.py). direct_regression_only requires --hybrid_checkpoint\
+  \ to have been trained on this same real data (see configs/data_real.yaml) to be\
+  \ meaningful."
+source: real
+test_set: 2
+ims_dir: data\raw\ims\2nd_test
+hybrid_checkpoint: runs\hybrid_real\model.pt
+fit_bearing: 2
+test_bearing: 1
+seq_len: 10
+n_healthy_snapshots: 5
+target_rate: 12000.0
+window_seconds: 1.0

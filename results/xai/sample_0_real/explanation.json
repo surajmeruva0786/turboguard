@@ -1,0 +1,49 @@
+{
+  "sample_idx": 0,
+  "true_class": "healthy",
+  "predicted_class": "healthy",
+  "confidence": 1.0,
+  "top_features": [
+    {
+      "name": "y_env_BPFO_h2_amp",
+      "shap_value": 0.04193205412660586
+    },
+    {
+      "name": "z_env_BSF_h3_amp",
+      "shap_value": 0.03296449130773818
+    },
+    {
+      "name": "y_spectral_centroid_hz",
+      "shap_value": 0.032825581395348837
+    },
+    {
+      "name": "z_mean_frequency_hz",
+      "shap_value": 0.03097545219638243
+    },
+    {
+      "name": "x_spectral_centroid_hz",
+      "shap_value": 0.030636061538940492
+    },
+    {
+      "name": "wp_node14_rel_energy",
+      "shap_value": 0.029214073599198274
+    },
+    {
+      "name": "z_env_BPFO_h2_amp",
+      "shap_value": 0.027629882697391188
+    },
+    {
+      "name": "z_env_BPFO_h3_amp",
+      "shap_value": 0.027355297157622745
+    },
+    {
+      "name": "y_median_frequency_hz",
+      "shap_value": 0.027339793281653743
+    },
+    {
+      "name": "y_env_FTF_h1_amp",
+      "shap_value": 0.0262328365511838
+    }
+  ],
+  "frequency_annotation": "Predicted: Healthy. Confidence 1.00. Dominant envelope peak at 30.0 Hz matches FTF x3 (35.77 Hz) within 16.13%."
+}

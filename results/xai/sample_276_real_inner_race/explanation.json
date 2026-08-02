@@ -1,0 +1,49 @@
+{
+  "sample_idx": 276,
+  "true_class": "inner_race",
+  "predicted_class": "inner_race",
+  "confidence": 0.998,
+  "top_features": [
+    {
+      "name": "z_env_BPFI_h1_amp",
+      "shap_value": 0.0868825000713247
+    },
+    {
+      "name": "y_env_BPFI_h1_amp",
+      "shap_value": 0.07779408793439987
+    },
+    {
+      "name": "z_env_BPFO_h1_amp",
+      "shap_value": 0.041871330572517594
+    },
+    {
+      "name": "y_env_BPFO_h1_amp",
+      "shap_value": 0.039724259173191626
+    },
+    {
+      "name": "y_env_BPFI_h3_amp",
+      "shap_value": 0.03597002535520813
+    },
+    {
+      "name": "y_env_BPFO_h2_amp",
+      "shap_value": 0.027775187947007358
+    },
+    {
+      "name": "z_env_BPFI_h3_amp",
+      "shap_value": 0.023367945164331733
+    },
+    {
+      "name": "y_std",
+      "shap_value": 0.02218805928038355
+    },
+    {
+      "name": "y_var",
+      "shap_value": 0.016802448295715536
+    },
+    {
+      "name": "y_hjorth_activity",
+      "shap_value": 0.015662095482908915
+    }
+  ],
+  "frequency_annotation": "Predicted: Inner-race fault. Confidence 1.00. Dominant envelope peak at 60.0 Hz matches BSF (70.58 Hz) within 14.99%."
+}

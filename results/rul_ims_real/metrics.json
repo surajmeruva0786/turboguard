@@ -1,0 +1,30 @@
+{
+  "fit_bearing": 2,
+  "test_bearing": 1,
+  "weight_direct": 1.0,
+  "threshold": 10000.0,
+  "health_indicator_only": {
+    "rmse": 4739.139830740036,
+    "mape": 111.6053742051637,
+    "phm_score": 2.028464109470009e+304,
+    "n_samples": 975,
+    "n_valid": 770,
+    "n_dropped_nonfinite": 205
+  },
+  "direct_regression_only": {
+    "rmse": 107.58638057738158,
+    "mape": 85996.43947429887,
+    "phm_score": 17356159002494.643,
+    "n_samples": 975,
+    "n_valid": 975,
+    "n_dropped_nonfinite": 0
+  },
+  "combined": {
+    "rmse": 107.14917925843407,
+    "mape": 108888.78993722328,
+    "phm_score": 17356090899930.709,
+    "n_samples": 975,
+    "n_valid": 770,
+    "n_dropped_nonfinite": 205
+  }
+}
